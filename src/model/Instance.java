@@ -37,11 +37,22 @@ public final class Instance<T> {
         return parameters;
     }
 
-    public Class<T> getInstantiatedClass() {
-        return instantiatedClass;
+    public Constructor<T> getInstantiationConstructor() {
+        try {
+            return instantiatedClass.getDeclaredConstructor(getConstructorTypes());
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
     }
 
-    public Constructor<T> getInstantiationConstructor() {
-        return (Constructor<T>) instantiatedClass.getDeclaredConstructors()[0];
+    private Class<?>[] getConstructorTypes() {
+        Class<?>[] constructorTypes = new Class<?>[parameters.length];
+
+        for (int i = 0; i < getParameters().length; i++) {
+            Parameter parameter = getParameters()[i];
+            constructorTypes[i] = parameter.getConstructorType();
+        }
+
+        return constructorTypes;
     }
 }

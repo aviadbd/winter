@@ -13,4 +13,16 @@ public final class Property implements Parameter {
     public Object getValue() {
         return value;
     }
+
+    @Override
+    public Class<?> getConstructorType() {
+        Class<?> clz = value.getClass();
+        try {
+            return (Class<?>) clz.getDeclaredField("TYPE").get(clz);
+        } catch (NoSuchFieldException e) {
+            return clz;
+        } catch (IllegalAccessException e) {
+            return clz;
+        }
+    }
 }

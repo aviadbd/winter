@@ -41,17 +41,17 @@ public class InstanceTest {
     public void oneParameter_getParameters() throws Exception {
         Instance<D> instance = new Instance<D>(D.class, five);
 
-        Assert.assertEquals(1, instance.getParameters().length, "Parameters.length");
-        Assert.assertEquals(five, instance.getParameters()[0], "Parameters[0]");
+        Assert.assertEquals(instance.getParameters().length, 1, "Parameters.length");
+        Assert.assertEquals(instance.getParameters()[0], five, "Parameters[0]");
     }
 
     @Test
     void twoParameters_getParameters() throws Exception {
         Instance<D> instance = new Instance<D>(D.class, five, seven);
 
-        Assert.assertEquals(2, instance.getParameters().length, "Parameters.length");
-        Assert.assertEquals(five, instance.getParameters()[0], "Parameters[0]");
-        Assert.assertEquals(seven, instance.getParameters()[1], "Parameters[1]");
+        Assert.assertEquals(instance.getParameters().length, 2, "Parameters.length");
+        Assert.assertEquals(instance.getParameters()[0], five, "Parameters[0]");
+        Assert.assertEquals(instance.getParameters()[1], seven,  "Parameters[1]");
     }
 
     @Test
@@ -62,8 +62,8 @@ public class InstanceTest {
 
         Assert.assertNotNull(ctor, "ctor");
         Class<?>[] parameterTypes = ctor.getParameterTypes();
-        Assert.assertEquals(1, parameterTypes.length, "parameterTypes.length");
-        Assert.assertEquals(Integer.TYPE, parameterTypes[0], "parameterTypes[0]");
+        Assert.assertEquals(parameterTypes.length, 1, "parameterTypes.length");
+        Assert.assertEquals(parameterTypes[0], Integer.TYPE, "parameterTypes[0]");
     }
 
     @Test
@@ -74,7 +74,7 @@ public class InstanceTest {
 
         Assert.assertNotNull(ctor, "ctor");
         Class<?>[] parameterTypes = ctor.getParameterTypes();
-        Assert.assertEquals(1, parameterTypes.length, "parameterTypes.length");
-        Assert.assertEquals(String.class, parameterTypes[0], "parameterTypes[0]");
+        Assert.assertEquals(parameterTypes.length, 1, "parameterTypes.length");
+        Assert.assertEquals(parameterTypes[0], String.class, "parameterTypes[0]");
     }
 }

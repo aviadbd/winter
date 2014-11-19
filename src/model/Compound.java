@@ -6,12 +6,19 @@ package model;
 public final class Compound implements Parameter {
 
     private final Instance linkedInstance;
+    private final Class<?> constructorType;
 
-    public Compound(Instance linkedInstance) {
+    public Compound(Class<?> constructorType, Instance linkedInstance) {
         this.linkedInstance = linkedInstance;
+        this.constructorType = constructorType;
     }
 
     public Instance getLinkedInstance() {
         return linkedInstance;
+    }
+
+    @Override
+    public Class<?> getConstructorType() {
+        return constructorType;
     }
 }
