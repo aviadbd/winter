@@ -17,7 +17,7 @@ public class CreatorTest {
 
     @Test
     public void createD_withInt() throws Exception{
-        Creator<D> c = new Creator<D>();
+        Creator c = new Creator();
         Instance<D> instance = new Instance<D>(D.class, new Property(5));
 
         D result = c.create(instance);
@@ -29,7 +29,7 @@ public class CreatorTest {
 
     @Test
     public void createD_withString() throws Exception {
-        Creator<D> c = new Creator<D>();
+        Creator c = new Creator();
         Instance<D> instance = new Instance<D>(D.class, new Property("name"));
 
         D result = c.create(instance);
@@ -41,7 +41,7 @@ public class CreatorTest {
 
     @Test
     public void createA_withD_Int() throws Exception {
-        Creator<A> c = new Creator<A>();
+        Creator c = new Creator();
 
         Instance<D> d = new Instance<D>(D.class, new Property(5));
         Instance<A> a = new Instance<A>(A.class, new Compound(D.class, d));
@@ -56,7 +56,7 @@ public class CreatorTest {
 
     @Test
     public void createA_withD_String() throws Exception {
-        Creator<A> c = new Creator<A>();
+        Creator c = new Creator();
 
         Instance<D> d = new Instance<D>(D.class, new Property("name"));
         Instance<A> a = new Instance<A>(A.class, new Compound(D.class, d));
@@ -71,7 +71,7 @@ public class CreatorTest {
 
     @Test
     public void createC_withA() throws Exception {
-        Creator<C> creator = new Creator<C>();
+        Creator creator = new Creator();
 
         Instance<D> d = new Instance<D>(D.class, new Property("name"));
         Instance<A> a = new Instance<A>(A.class, new Compound(D.class, d));
@@ -89,7 +89,7 @@ public class CreatorTest {
 
     @Test
     public void createC_withB() throws Exception {
-        Creator<C> creator = new Creator<C>();
+        Creator creator = new Creator();
 
         Instance<D> d1 = new Instance<D>(D.class, new Property(5));
         Instance<D> d2 = new Instance<D>(D.class, new Property("name"));

@@ -1,5 +1,8 @@
 package model;
 
+import creation.CreationException;
+import creation.Creator;
+
 /**
  * Created by aviadbendov on 11/19/14.
  */
@@ -20,5 +23,10 @@ public final class Compound implements Parameter {
     @Override
     public Class<?> getConstructorType() {
         return constructorType;
+    }
+
+    @Override
+    public Object getValue(Creator creator) throws CreationException {
+        return creator.create(getLinkedInstance());
     }
 }

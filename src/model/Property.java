@@ -1,5 +1,7 @@
 package model;
 
+import creation.Creator;
+
 /**
  * Created by aviadbendov on 11/19/14.
  */
@@ -24,5 +26,10 @@ public final class Property implements Parameter {
         } catch (IllegalAccessException e) {
             return clz;
         }
+    }
+
+    @Override
+    public Object getValue(Creator creator) {
+        return getValue();
     }
 }
