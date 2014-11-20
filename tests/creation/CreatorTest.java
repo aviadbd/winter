@@ -1,6 +1,10 @@
 package creation;
 
+import data.A;
+import data.B;
+import data.C;
 import data.D;
+import model.Compound;
 import model.Instance;
 import model.Property;
 import org.testng.Assert;
@@ -33,5 +37,75 @@ public class CreatorTest {
         Assert.assertNotNull(result, "result");
         Assert.assertEquals(result.getNumber(), 0, "result.number");
         Assert.assertEquals(result.getString(), "name", "result.string");
+    }
+
+    @Test
+    public void createA_withD_Int() throws Exception {
+        Creator<A> c = new Creator<A>();
+
+        Instance<D> d = new Instance<D>(D.class, new Property(5));
+        Instance<A> a = new Instance<A>(A.class, new Compound(D.class, d));
+
+        A result = c.create(a);
+
+        Assert.assertNotNull(result, "result");
+        Assert.assertNotNull(result.getD1(), "result.d1");
+        Assert.assertEquals(result.getD1().getNumber(), 5, "result.d1.number");
+        Assert.assertEquals(result.getD1().getString(), "", "result.d1.string");
+    }
+
+    @Test
+    public void createA_withD_String() throws Exception {
+        Creator<A> c = new Creator<A>();
+
+        Instance<D> d = new Instance<D>(D.class, new Property("name"));
+        Instance<A> a = new Instance<A>(A.class, new Compound(D.class, d));
+
+        A result = c.create(a);
+
+        Assert.assertNotNull(result, "result");
+        Assert.assertNotNull(result.getD1(), "result.d1");
+        Assert.assertEquals(result.getD1().getNumber(), 0, "result.d1.number");
+        Assert.assertEquals(result.getD1().getString(), "name", "result.d1.string");
+    }
+
+    @Test
+    public void createC_withA() throws Exception {
+        Creator<C> creator = new Creator<C>();
+
+        Instance<D> d = new Instance<D>(D.class, new Property("name"));
+        Instance<A> a = new Instance<A>(A.class, new Compound(D.class, d));
+        Instance<C> c = new Instance<C>(C.class, new Compound(A.class, a));
+
+        C result = creator.create(c);
+
+        Assert.assertNotNull(result, "result");
+        Assert.assertNotNull(result.getA(), "result.a");
+        Assert.assertTrue(result.getA().getClass() == A.class, "result.a.class == A");
+        Assert.assertNotNull(result.getA().getD1(), "result.a.d1");
+        Assert.assertEquals(result.getA().getD1().getNumber(), 0, "result.a.d1.number");
+        Assert.assertEquals(result.getA().getD1().getString(), "name", "result.a.d1.string");
+    }
+
+    @Test
+    public void createC_withB() throws Exception {
+        Creator<C> creator = new Creator<C>();
+
+        Instance<D> d1 = new Instance<D>(D.class, new Property(5));
+        Instance<D> d2 = new Instance<D>(D.class, new Property("name"));
+        Instance<B> b = new Instance<B>(B.class, new Compound(D.class, d1), new Compound(D.class, d2));
+        Instance<C> c = new Instance<C>(C.class, new Compound(A.class, b));
+
+        C result = creator.create(c);
+
+        Assert.assertNotNull(result, "result");
+        Assert.assertNotNull(result.getA(), "result.a");
+        Assert.assertTrue(result.getA().getClass() == B.class, "result.a.class == B");
+        Assert.assertNotNull(result.getA().getD1(), "result.a.d1");
+        Assert.assertNotNull(((B) result.getA()).getD2(), "result.a.d2");
+        Assert.assertEquals(result.getA().getD1().getNumber(), 5, "result.a.d1.number");
+        Assert.assertEquals(result.getA().getD1().getString(), "", "result.a.d1.string");
+        Assert.assertEquals(((B)result.getA()).getD2().getNumber(), 0, "result.a.d2.number");
+        Assert.assertEquals(((B)result.getA()).getD2().getString(), "name", "result.a.d2.string");
     }
 }
