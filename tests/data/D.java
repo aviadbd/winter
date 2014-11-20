@@ -24,4 +24,24 @@ public class D {
     public String getString() {
         return string;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        D d = (D) o;
+
+        if (number != d.number) return false;
+        if (string != null ? !string.equals(d.string) : d.string != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = number;
+        result = 31 * result + (string != null ? string.hashCode() : 0);
+        return result;
+    }
 }

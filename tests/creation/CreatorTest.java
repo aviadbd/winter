@@ -108,4 +108,35 @@ public class CreatorTest {
         Assert.assertEquals(((B)result.getA()).getD2().getNumber(), 0, "result.a.d2.number");
         Assert.assertEquals(((B)result.getA()).getD2().getString(), "name", "result.a.d2.string");
     }
+
+    @Test
+    public void createB_SameInstanceForD_CreatedTheSame() throws Exception {
+        Creator creator = new Creator();
+
+        Instance<D> d = new Instance<D>(D.class, new Property(5));
+        Instance<B> b = new Instance<B>(B.class, new Compound(D.class, d), new Compound(D.class, d));
+
+        B result = creator.create(b);
+
+        Assert.assertNotNull(result, "result");
+        Assert.assertNotNull(result.getD1(), "result.d1");
+        Assert.assertNotNull(result.getD2(), "result.d2");
+        Assert.assertSame(result.getD1(), result.getD2(), "result.d1 == result.d2");
+    }
+
+    @Test
+    public void createB_DifferentInstanceForD_AreTheSame() throws Exception {
+        Creator creator = new Creator();
+
+        Instance<D> d1 = new Instance<D>(D.class, new Property(5));
+        Instance<D> d2 = new Instance<D>(D.class, new Property(5));
+        Instance<B> b = new Instance<B>(B.class, new Compound(D.class, d1), new Compound(D.class, d2));
+
+        B result = creator.create(b);
+
+        Assert.assertNotNull(result, "result");
+        Assert.assertNotNull(result.getD1(), "result.d1");
+        Assert.assertNotNull(result.getD2(), "result.d2");
+        Assert.assertNotSame(result.getD1(), result.getD2(), "result.d1 != result.d2");
+    }
 }
