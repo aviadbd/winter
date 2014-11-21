@@ -4,7 +4,11 @@ import creation.CreationException;
 import creation.Creator;
 
 /**
- * Created by aviadbendov on 11/19/14.
+ * Parameters are a way for {@link model.Instance} objects in Winter to identify the correct constructor to call
+ * and to populate it with objects, using its {@link model.Parameter#getValue} method.
+ *
+ * @see model
+ * @see creation.Creator
  */
 public interface Parameter {
     Class<?> getConstructorType();

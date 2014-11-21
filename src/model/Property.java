@@ -3,7 +3,9 @@ package model;
 import creation.Creator;
 
 /**
- * Created by aviadbendov on 11/19/14.
+ * Properties are the primitives of Winter, and are used as the leaf-nodes of an {@link model.Instance} constructor hierarchy in Winter.
+ *
+ * @see model
  */
 public final class Property implements Parameter {
     private final Object value;

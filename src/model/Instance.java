@@ -3,7 +3,10 @@ package model;
 import java.lang.reflect.Constructor;
 
 /**
- * Created by aviadbendov on 11/19/14.
+ * Instances are a representation of a constructor to be called. They hold {@link model.Parameter} objects
+ * to both identify the correct constructor to call and to populate it with objects.
+ *
+ * @see model
  */
 public final class Instance<T> {
     private final Class<T> instantiatedClass;

@@ -4,7 +4,9 @@ import creation.CreationException;
 import creation.Creator;
 
 /**
- * Created by aviadbendov on 11/19/14.
+ * Compounds in Winter serve as a bridge for the Many-to-Many relationship between {@link model.Instance} objects.
+ *
+ * @see model
  */
 public final class Compound implements Parameter {
 
