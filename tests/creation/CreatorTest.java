@@ -4,9 +4,7 @@ import data.A;
 import data.B;
 import data.C;
 import data.D;
-import model.Compound;
-import model.Instance;
-import model.Property;
+import model.*;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -138,5 +136,17 @@ public class CreatorTest {
         Assert.assertNotNull(result.getD1(), "result.d1");
         Assert.assertNotNull(result.getD2(), "result.d2");
         Assert.assertNotSame(result.getD1(), result.getD2(), "result.d1 != result.d2");
+    }
+
+    @Test
+    public void createA_nullAsValue() throws Exception {
+        Creator creator = new Creator();
+
+        Instance<A> a = new Instance<A>(A.class, new Null(D.class));
+
+        A result = creator.create(a);
+
+        Assert.assertNotNull(result, "result");
+        Assert.assertNull(result.getD1(), "result.d1");
     }
 }
