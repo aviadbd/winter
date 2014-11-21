@@ -9,4 +9,8 @@ public class CreationException extends Exception {
     public CreationException(Throwable cause) {
         super(cause);
     }
+
+    public CreationException(String message) {
+        super(message);
+    }
 }

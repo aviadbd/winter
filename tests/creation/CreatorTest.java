@@ -149,4 +149,13 @@ public class CreatorTest {
         Assert.assertNotNull(result, "result");
         Assert.assertNull(result.getD1(), "result.d1");
     }
+
+    @Test(expectedExceptions = CreationException.class)
+    public void createA_invalidCtor_exception() throws Exception {
+        Creator creator = new Creator();
+
+        Instance<A> a = new Instance<A>(A.class, new Property(3));
+
+        creator.create(a);
+    }
 }

@@ -3,7 +3,9 @@ package creation;
 import model.Instance;
 import model.Parameter;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +33,13 @@ public final class Creator {
         }
 
         try {
-            created = instance.getInstantiationConstructor().newInstance(objects);
+            Constructor<T> constructor = instance.getInstantiationConstructor();
+
+            if (constructor == null) {
+                throw new CreationException("No available constructor for parameters: " + Arrays.toString(parameters));
+            }
+
+            created = constructor.newInstance(objects);
 
             cachedInstances.put(instance, created);
 
