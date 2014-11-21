@@ -21,4 +21,17 @@ public class PropertyTest {
         Assert.assertEquals(property.getConstructorType(), String.class);
     }
 
+    @Test
+    public void toString_int() {
+        Property property = new Property(5);
+
+        Assert.assertEquals(property.toString(), "[int:5]");
+    }
+
+    @Test
+    public void toString_string() {
+        Property property = new Property("yo");
+
+        Assert.assertEquals(property.toString(), "[class java.lang.String:yo]");
+    }
 }

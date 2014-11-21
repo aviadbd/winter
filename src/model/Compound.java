@@ -31,4 +31,9 @@ public final class Compound implements Parameter {
     public Object getValue(Creator creator) throws CreationException {
         return creator.create(getLinkedInstance());
     }
+
+    @Override
+    public String toString() {
+        return "[" + getConstructorType().toString() + "]";
+    }
 }

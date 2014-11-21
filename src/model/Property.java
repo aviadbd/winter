@@ -34,4 +34,9 @@ public final class Property implements Parameter {
     public Object getValue(Creator creator) {
         return getValue();
     }
+
+    @Override
+    public String toString() {
+        return String.format("[%s:%s]", getConstructorType().toString(), getValue().toString());
+    }
 }
