@@ -55,7 +55,7 @@ public final class Creator {
 
         for (int i = 0; i < parameters.length; i++) {
             Parameter parameter = parameters[i];
-
+            // recursive call to create instances
             objects[i] = parameter.getValue(this);
         }
 
