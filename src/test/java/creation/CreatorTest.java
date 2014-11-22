@@ -11,6 +11,8 @@ import model.Property;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.List;
+
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -491,6 +493,40 @@ public class CreatorTest {
 
         public Collection<Object> getObjects() {
             return objects;
+        }
+    }
+
+    @Test
+    public void createD_invalidCtor_exceptionContainsD() {
+        Creator c = new Creator();
+
+        Instance<D> d = new Instance<D>(D.class, new Property(5), new Property(6));
+
+        try {
+            c.create(d);
+        } catch (CreationException e) {
+            List<Instance<?>> stack = e.getInstantiationStack();
+
+            Assert.assertEquals(stack.size(), 1, "stack.size");
+            Assert.assertEquals(stack.get(0), d, "stack[0] == d");
+        }
+    }
+
+    @Test
+    public void createA_invalidCtor_exceptionContainsDandA() {
+        Creator c = new Creator();
+
+        Instance<D> d = new Instance<D>(D.class, new Property(5), new Property(6));
+        Instance<A> a = new Instance<A>(A.class, new Compound(D.class, d));
+
+        try {
+            c.create(a);
+        } catch (CreationException e) {
+            List<Instance<?>> stack = e.getInstantiationStack();
+
+            Assert.assertEquals(stack.size(), 2, "stack.size");
+            Assert.assertEquals(stack.get(0), a, "stack[0] == a");
+            Assert.assertEquals(stack.get(1), d, "stack[1] == d");
         }
     }
 }
