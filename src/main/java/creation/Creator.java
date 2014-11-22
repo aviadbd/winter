@@ -14,6 +14,7 @@ import java.util.Map;
  */
 public final class Creator {
     private final Map<Instance, Object> cachedInstances = new HashMap<Instance, Object>();
+    private final CreatorListenersManager listeners = new CreatorListenersManager();
 
     public <T> T create(Instance<T> instance) throws CreationException {
         // Might be cached.
@@ -23,23 +24,16 @@ public final class Creator {
             return created;
         }
 
-        Parameter[] parameters = instance.getParameters();
-        Object[] objects = new Object[parameters.length];
-
-        for (int i = 0; i < parameters.length; i++) {
-            Parameter parameter = parameters[i];
-
-            objects[i] = parameter.getValue(this);
-        }
-
         try {
             Constructor<T> constructor = instance.getInstantiationConstructor();
 
             if (constructor == null) {
-                throw new CreationException("No available constructor for parameters: " + Arrays.toString(parameters));
+                throw new CreationException("No available constructor for parameters: " + Arrays.toString(instance.getParameters()));
             }
 
-            created = constructor.newInstance(objects);
+            listeners.firePreInstantiationListeners(instance);
+            created = constructor.newInstance(getObjects(instance));
+            listeners.firePostInstantiationListeners(instance, created);
 
             cachedInstances.put(instance, created);
 
@@ -50,6 +44,37 @@ public final class Creator {
             throw new CreationException(e);
         } catch (InvocationTargetException e) {
             throw new CreationException(e);
+        } catch (RuntimeException e) {
+            throw new CreationException(e);
         }
+    }
+
+    private Object[] getObjects(Instance<?> instance) throws CreationException {
+        Parameter[] parameters = instance.getParameters();
+        Object[] objects = new Object[parameters.length];
+
+        for (int i = 0; i < parameters.length; i++) {
+            Parameter parameter = parameters[i];
+
+            objects[i] = parameter.getValue(this);
+        }
+
+        return objects;
+    }
+
+    public boolean addPreInstantiationListener(PreInstantiationListener listener) {
+        return listeners.addPreInstantiationListener(listener);
+    }
+
+    public boolean addPostInstantiationListener(PostInstantiationListener listener) {
+        return listeners.addPostInstantiationListener(listener);
+    }
+
+    public boolean removePostInstantiationListener(PostInstantiationListener listener) {
+        return listeners.removePostInstantiationListener(listener);
+    }
+
+    public boolean removePreInstantiationListener(PreInstantiationListener listener) {
+        return listeners.removePreInstantiationListener(listener);
     }
 }

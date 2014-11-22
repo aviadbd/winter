@@ -1,5 +1,7 @@
 package creation;
 
+import model.Instance;
+
 /**
  * Created by aviadbendov on 11/20/14.
  */
