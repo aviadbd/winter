@@ -16,6 +16,8 @@ hs_err_pid*
 *.iml
 
 # Gradle
+build/
+.gradle/
 gradle/
 gradlew
 gradlew.bat
