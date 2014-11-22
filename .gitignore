@@ -14,3 +14,10 @@ hs_err_pid*
 # IDEA
 .idea/
 *.iml
+
+# Gradle
+build/
+.gradle/
+gradle/
+gradlew
+gradlew.bat
