@@ -8,6 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 
 /**
  * Created by aviadbendov on 11/19/14.
@@ -15,7 +16,11 @@ import java.util.Map;
 public final class Creator {
     private final Map<Instance, Object> cachedInstances = new HashMap<Instance, Object>();
 
+    private final Stack<Instance<?>> instantiationStack = new Stack<Instance<?>>();
+
     public <T> T create(Instance<T> instance) throws CreationException {
+        instantiationStack.push(instance);
+
         // Might be cached.
         T created = (T) cachedInstances.get(instance);
 
@@ -36,7 +41,7 @@ public final class Creator {
             Constructor<T> constructor = instance.getInstantiationConstructor();
 
             if (constructor == null) {
-                throw new CreationException("No available constructor for parameters: " + Arrays.toString(parameters));
+                throw new CreationException("No available constructor for parameters: " + Arrays.toString(parameters), instantiationStack);
             }
 
             created = constructor.newInstance(objects);
@@ -45,11 +50,13 @@ public final class Creator {
 
             return created;
         } catch (InstantiationException e) {
-            throw new CreationException(e);
+            throw new CreationException(e, instantiationStack);
         } catch (IllegalAccessException e) {
-            throw new CreationException(e);
+            throw new CreationException(e, instantiationStack);
         } catch (InvocationTargetException e) {
-            throw new CreationException(e);
+            throw new CreationException(e, instantiationStack);
+        } finally {
+            instantiationStack.pop();
         }
     }
 }
