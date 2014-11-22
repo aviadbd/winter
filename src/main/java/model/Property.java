@@ -38,51 +38,30 @@ public final class Property implements Parameter {
     }
 
     public enum PrimitiveType {
-        Type_Integer {
+        INTEGER {
             @Override
             public Class<?> getConstructorType() {
-                return getConstructorTypeHelp(Integer.class);
+                return Integer.TYPE;
             }
         },
-        Type_Long {
+        LONG {
             @Override
             public Class<?> getConstructorType() {
-                return getConstructorTypeHelp(Long.class);
+                return Long.class;
             }
         },
-        Type_String {
+        STRING {
             @Override
             public Class<?> getConstructorType() {
-                return getConstructorTypeHelp(String.class);
+                return String.class;
             }
         },
-        Type_Enum{
+        ENUM {
             public Class<?> getConstructorType() {
-                return getConstructorTypeHelp(Enum.class);
+                return Enum.class;
             }
         };
 
         public abstract Class<?> getConstructorType();
-        public Class<?> getConstructorTypeHelp(Class clz){
-            try {
-                return (Class<?>) clz.getDeclaredField("TYPE").get(clz);
-            } catch (NoSuchFieldException e) {
-                return clz;
-            } catch (IllegalAccessException e) {
-                return clz;
-            }
-        }
-
-    }
-
-    public Class<?> getCoffnstructorType() {
-        Class<?> clz = value.getClass();
-        try {
-            return (Class<?>) clz.getDeclaredField("TYPE").get(clz);
-        } catch (NoSuchFieldException e) {
-            return clz;
-        } catch (IllegalAccessException e) {
-            return clz;
-        }
     }
 }
