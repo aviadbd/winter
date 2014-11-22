@@ -404,7 +404,7 @@ public class CreatorTest {
     }
 
     @Test
-    public void proof_changeParameter() throws CreationException {
+    public void preListenerChangeParameter_resultValue() throws CreationException {
         Creator c = new Creator();
         Instance<D> instance = new Instance<D>(D.class, new Property(5));
 
@@ -420,6 +420,37 @@ public class CreatorTest {
         D result = c.create(instance);
 
         Assert.assertEquals(result.getNumber(), 6);
+    }
+
+    @Test
+    public void preListenerChangeParameter_cachedObjectCorrectly() throws CreationException {
+        Creator c = new Creator();
+        Instance<D> instance = new Instance<D>(D.class, new Property(5));
+
+        PreInstantiationListener pil = new PreInstantiationListener() {
+            @Override
+            public void willCreateInstance(Instance<?> instance) throws CreationException {
+                instance.getParameters()[0] = new Property(6);
+            }
+        };
+
+        c.addPreInstantiationListener(pil);
+
+        c.create(instance);
+        D result2 = c.create(instance);
+
+        Assert.assertEquals(result2.getNumber(), 6);
+    }
+
+    @Test
+    public void createRunTwice_sameObjectReturned() throws CreationException {
+        Creator c = new Creator();
+        Instance<D> instance = new Instance<D>(D.class, new Property(5));
+
+        D result1 = c.create(instance);
+        D result2 = c.create(instance);
+
+        Assert.assertSame(result2, result1);
     }
 
     private static class MyPreInstantiationListener implements PreInstantiationListener {
