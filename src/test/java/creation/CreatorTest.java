@@ -529,4 +529,42 @@ public class CreatorTest {
             Assert.assertEquals(stack.get(1), d, "stack[1] == d");
         }
     }
+
+    @Test
+    public void createB_invalidCtorFirstD_exceptionContainsD1() {
+        Creator c = new Creator();
+
+        Instance<D> d1 = new Instance<D>(D.class, new Property(5), new Property(6));
+        Instance<D> d2 = new Instance<D>(D.class, new Property(5));
+        Instance<B> b = new Instance<B>(B.class, new Compound(D.class, d1), new Compound(D.class, d2));
+
+        try {
+            c.create(b);
+        } catch (CreationException e) {
+            List<Instance<?>> stack = e.getInstantiationStack();
+
+            Assert.assertEquals(stack.size(), 2, "stack.size");
+            Assert.assertEquals(stack.get(0), b, "stack[0] == b");
+            Assert.assertEquals(stack.get(1), d1, "stack[1] == d1");
+        }
+    }
+
+    @Test
+    public void createB_invalidCtorFirstD_exceptionContainsD2() {
+        Creator c = new Creator();
+
+        Instance<D> d1 = new Instance<D>(D.class, new Property(5));
+        Instance<D> d2 = new Instance<D>(D.class, new Property(5), new Property(6));
+        Instance<B> b = new Instance<B>(B.class, new Compound(D.class, d1), new Compound(D.class, d2));
+
+        try {
+            c.create(b);
+        } catch (CreationException e) {
+            List<Instance<?>> stack = e.getInstantiationStack();
+
+            Assert.assertEquals(stack.size(), 2, "stack.size");
+            Assert.assertEquals(stack.get(0), b, "stack[0] == b");
+            Assert.assertEquals(stack.get(1), d2, "stack[1] == d2");
+        }
+    }
 }
