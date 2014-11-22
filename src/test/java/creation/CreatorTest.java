@@ -4,7 +4,10 @@ import data.A;
 import data.B;
 import data.C;
 import data.D;
-import model.*;
+import model.Compound;
+import model.Instance;
+import model.Null;
+import model.Property;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -14,7 +17,7 @@ import org.testng.annotations.Test;
 public class CreatorTest {
 
     @Test
-    public void createD_withInt() throws Exception{
+    public void createD_withInt() throws Exception {
         Creator c = new Creator();
         Instance<D> instance = new Instance<D>(D.class, new Property(5));
 
@@ -103,8 +106,8 @@ public class CreatorTest {
         Assert.assertNotNull(((B) result.getA()).getD2(), "result.a.d2");
         Assert.assertEquals(result.getA().getD1().getNumber(), 5, "result.a.d1.number");
         Assert.assertEquals(result.getA().getD1().getString(), "", "result.a.d1.string");
-        Assert.assertEquals(((B)result.getA()).getD2().getNumber(), 0, "result.a.d2.number");
-        Assert.assertEquals(((B)result.getA()).getD2().getString(), "name", "result.a.d2.string");
+        Assert.assertEquals(((B) result.getA()).getD2().getNumber(), 0, "result.a.d2.number");
+        Assert.assertEquals(((B) result.getA()).getD2().getString(), "name", "result.a.d2.string");
     }
 
     @Test

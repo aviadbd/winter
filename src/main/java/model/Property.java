@@ -3,7 +3,7 @@ package model;
 import creation.Creator;
 
 /**
- * Properties are the primitives of Winter, and are used as the leaf-nodes of an {@link model.Instance} constructor hierarchy in Winter.
+ * Properties are the primitives of Winter, and are used as the leaf-nodes of an {@link Instance} constructor hierarchy in Winter.
  *
  * @see model
  */

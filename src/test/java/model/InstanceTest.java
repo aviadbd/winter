@@ -51,7 +51,7 @@ public class InstanceTest {
 
         Assert.assertEquals(instance.getParameters().length, 2, "Parameters.length");
         Assert.assertEquals(instance.getParameters()[0], five, "Parameters[0]");
-        Assert.assertEquals(instance.getParameters()[1], seven,  "Parameters[1]");
+        Assert.assertEquals(instance.getParameters()[1], seven, "Parameters[1]");
     }
 
     @Test
