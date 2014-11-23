@@ -11,7 +11,10 @@ import java.util.Map;
 import java.util.Stack;
 
 /**
- * Created by aviadbendov on 11/19/14.
+ * The Creator class is where {@link model.Instance} classes become initialized user-domain classes. By invoking the
+ * {@link #create(Instance)} method, an Instance class is recursively initialized.
+ *
+ * @author aviad
  */
 public final class Creator {
     private final Map<Instance, Object> cachedInstances = new HashMap<Instance, Object>();
@@ -19,6 +22,7 @@ public final class Creator {
 
     private final Stack<Instance<?>> instantiationStack = new Stack<Instance<?>>();
 
+    @SuppressWarnings("unchecked")
     public <T> T create(Instance<T> instance) throws CreationException {
         instantiationStack.push(instance);
 

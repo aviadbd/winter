@@ -7,7 +7,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Created by aviadbendov on 11/20/14.
+ * A specialized exception for the {@link Creator} class. This exception class contains a
+ * stack (see {@link #getInstantiationStack()}) for the {@link model.Instance} items that were being created when the exception
+ * was raised.
+ *
+ * @author aviad
  */
 public class CreationException extends Exception {
     private final List<Instance<?>> instantiationStack;

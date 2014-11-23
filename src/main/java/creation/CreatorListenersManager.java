@@ -7,7 +7,10 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 /**
- * Created by aviadbendov on 11/22/14.
+ * Manages the {@link creation.PostInstantiationListener} and {@link creation.PreInstantiationListener}
+ * items for a {@link creation.Creator} class.
+ *
+ * @author aviad
  */
 final class CreatorListenersManager {
     private final Collection<PreInstantiationListener> preInstantiationListeners;
