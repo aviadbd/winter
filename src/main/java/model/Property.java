@@ -38,6 +38,12 @@ public final class Property implements Parameter {
     }
 
     public enum PrimitiveType {
+        BYTE {
+            @Override
+            public Class<?> getConstructorType() {
+                return Byte.TYPE;
+            }
+        },
         INTEGER {
             @Override
             public Class<?> getConstructorType() {
@@ -47,18 +53,25 @@ public final class Property implements Parameter {
         LONG {
             @Override
             public Class<?> getConstructorType() {
-                return Long.class;
+                return Long.TYPE;
+            }
+        },
+        FLOAT {
+            @Override
+            public Class<?> getConstructorType() {
+                return Float.TYPE;
+            }
+        },
+        DOUBLE {
+            @Override
+            public Class<?> getConstructorType() {
+                return Double.TYPE;
             }
         },
         STRING {
             @Override
             public Class<?> getConstructorType() {
                 return String.class;
-            }
-        },
-        ENUM {
-            public Class<?> getConstructorType() {
-                return Enum.class;
             }
         };
 

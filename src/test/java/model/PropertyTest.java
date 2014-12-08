@@ -6,9 +6,33 @@ import org.testng.annotations.Test;
 public class PropertyTest {
 
     @Test
+    public void getConstructorType_byte() {
+        Property property = new Property(5, Property.PrimitiveType.BYTE);
+        Assert.assertEquals(property.getConstructorType(), Byte.TYPE);
+    }
+
+    @Test
     public void getConstructorType_int() {
         Property property = new Property(5, Property.PrimitiveType.INTEGER);
         Assert.assertEquals(property.getConstructorType(), Integer.TYPE);
+    }
+
+    @Test
+    public void getConstructorType_long() {
+        Property property = new Property(5, Property.PrimitiveType.LONG);
+        Assert.assertEquals(property.getConstructorType(), Long.TYPE);
+    }
+
+    @Test
+    public void getConstructorType_float() {
+        Property property = new Property(4.2, Property.PrimitiveType.FLOAT);
+        Assert.assertEquals(property.getConstructorType(), Float.TYPE);
+    }
+
+    @Test
+    public void getConstructorType_double() {
+        Property property = new Property(4.2, Property.PrimitiveType.DOUBLE);
+        Assert.assertEquals(property.getConstructorType(), Double.TYPE);
     }
 
     @Test
@@ -19,8 +43,8 @@ public class PropertyTest {
 
     @Test
     public void getConstructorType_enum() {
-        Property property = new Property(E.E1, Property.PrimitiveType.ENUM);
-        Assert.assertEquals(property.getConstructorType(), Enum.class);
+        Parameter property = new Enum(E.E1);
+        Assert.assertEquals(property.getConstructorType(), E.class);
     }
 
 
@@ -31,6 +55,12 @@ public class PropertyTest {
     }
 
     @Test
+    public void toString_long() {
+        Property property = new Property(5, Property.PrimitiveType.LONG);
+        Assert.assertEquals(property.toString(), "[long:5]");
+    }
+
+    @Test
     public void toString_string() {
         Property property = new Property("yo", Property.PrimitiveType.STRING);
         Assert.assertEquals(property.toString(), "[class java.lang.String:yo]");
@@ -38,8 +68,8 @@ public class PropertyTest {
 
     @Test
     public void toString_enum() {
-        Property property = new Property(E.E1, Property.PrimitiveType.ENUM);
-        Assert.assertEquals(property.toString(), "[class java.lang.Enum:E1]");
+        Parameter property = new Enum(E.E1);
+        Assert.assertEquals(property.toString(), "[class model.PropertyTest$E:E1]");
     }
 
     enum E{
