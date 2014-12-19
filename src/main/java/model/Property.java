@@ -2,6 +2,8 @@ package model;
 
 import creation.Creator;
 
+import java.util.Locale;
+
 /**
  * Properties are the primitives of Winter, and are used as the leaf-nodes of an {@link Instance} constructor hierarchy in Winter.
  *
@@ -9,9 +11,11 @@ import creation.Creator;
  */
 public final class Property implements Parameter {
     private final Object value;
+    private final PrimitiveType primitiveType;
 
-    public Property(Object value) {
+    public Property(Object value, PrimitiveType primitiveType) {
         this.value = value;
+        this.primitiveType = primitiveType;
     }
 
     public Object getValue() {
@@ -20,14 +24,7 @@ public final class Property implements Parameter {
 
     @Override
     public Class<?> getConstructorType() {
-        Class<?> clz = value.getClass();
-        try {
-            return (Class<?>) clz.getDeclaredField("TYPE").get(clz);
-        } catch (NoSuchFieldException e) {
-            return clz;
-        } catch (IllegalAccessException e) {
-            return clz;
-        }
+        return primitiveType.getConstructorType();
     }
 
     @Override
@@ -38,5 +35,46 @@ public final class Property implements Parameter {
     @Override
     public String toString() {
         return String.format("[%s:%s]", getConstructorType().toString(), getValue().toString());
+    }
+
+    public enum PrimitiveType {
+        BYTE {
+            @Override
+            public Class<?> getConstructorType() {
+                return Byte.TYPE;
+            }
+        },
+        INTEGER {
+            @Override
+            public Class<?> getConstructorType() {
+                return Integer.TYPE;
+            }
+        },
+        LONG {
+            @Override
+            public Class<?> getConstructorType() {
+                return Long.TYPE;
+            }
+        },
+        FLOAT {
+            @Override
+            public Class<?> getConstructorType() {
+                return Float.TYPE;
+            }
+        },
+        DOUBLE {
+            @Override
+            public Class<?> getConstructorType() {
+                return Double.TYPE;
+            }
+        },
+        STRING {
+            @Override
+            public Class<?> getConstructorType() {
+                return String.class;
+            }
+        };
+
+        public abstract Class<?> getConstructorType();
     }
 }

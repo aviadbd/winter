@@ -24,7 +24,7 @@ public class CreatorTest {
     @Test
     public void createD_withInt() throws Exception {
         Creator c = new Creator();
-        Instance<D> instance = new Instance<D>(D.class, new Property(5));
+        Instance<D> instance = new Instance<D>(D.class, new Property(5, Property.PrimitiveType.INTEGER));
 
         D result = c.create(instance);
 
@@ -36,7 +36,7 @@ public class CreatorTest {
     @Test
     public void createD_withString() throws Exception {
         Creator c = new Creator();
-        Instance<D> instance = new Instance<D>(D.class, new Property("name"));
+        Instance<D> instance = new Instance<D>(D.class, new Property("name", Property.PrimitiveType.STRING));
 
         D result = c.create(instance);
 
@@ -49,7 +49,7 @@ public class CreatorTest {
     public void createA_withD_Int() throws Exception {
         Creator c = new Creator();
 
-        Instance<D> d = new Instance<D>(D.class, new Property(5));
+        Instance<D> d = new Instance<D>(D.class, new Property(5, Property.PrimitiveType.INTEGER));
         Instance<A> a = new Instance<A>(A.class, new Compound(D.class, d));
 
         A result = c.create(a);
@@ -64,7 +64,7 @@ public class CreatorTest {
     public void createA_withD_String() throws Exception {
         Creator c = new Creator();
 
-        Instance<D> d = new Instance<D>(D.class, new Property("name"));
+        Instance<D> d = new Instance<D>(D.class, new Property("name", Property.PrimitiveType.STRING));
         Instance<A> a = new Instance<A>(A.class, new Compound(D.class, d));
 
         A result = c.create(a);
@@ -79,7 +79,7 @@ public class CreatorTest {
     public void createC_withA() throws Exception {
         Creator creator = new Creator();
 
-        Instance<D> d = new Instance<D>(D.class, new Property("name"));
+        Instance<D> d = new Instance<D>(D.class, new Property("name", Property.PrimitiveType.STRING));
         Instance<A> a = new Instance<A>(A.class, new Compound(D.class, d));
         Instance<C> c = new Instance<C>(C.class, new Compound(A.class, a));
 
@@ -97,8 +97,8 @@ public class CreatorTest {
     public void createC_withB() throws Exception {
         Creator creator = new Creator();
 
-        Instance<D> d1 = new Instance<D>(D.class, new Property(5));
-        Instance<D> d2 = new Instance<D>(D.class, new Property("name"));
+        Instance<D> d1 = new Instance<D>(D.class, new Property(5, Property.PrimitiveType.INTEGER));
+        Instance<D> d2 = new Instance<D>(D.class, new Property("name", Property.PrimitiveType.STRING));
         Instance<B> b = new Instance<B>(B.class, new Compound(D.class, d1), new Compound(D.class, d2));
         Instance<C> c = new Instance<C>(C.class, new Compound(A.class, b));
 
@@ -119,7 +119,7 @@ public class CreatorTest {
     public void createB_SameInstanceForD_CreatedTheSame() throws Exception {
         Creator creator = new Creator();
 
-        Instance<D> d = new Instance<D>(D.class, new Property(5));
+        Instance<D> d = new Instance<D>(D.class, new Property(5, Property.PrimitiveType.INTEGER));
         Instance<B> b = new Instance<B>(B.class, new Compound(D.class, d), new Compound(D.class, d));
 
         B result = creator.create(b);
@@ -134,8 +134,8 @@ public class CreatorTest {
     public void createB_DifferentInstanceForD_AreTheSame() throws Exception {
         Creator creator = new Creator();
 
-        Instance<D> d1 = new Instance<D>(D.class, new Property(5));
-        Instance<D> d2 = new Instance<D>(D.class, new Property(5));
+        Instance<D> d1 = new Instance<D>(D.class, new Property(5, Property.PrimitiveType.INTEGER));
+        Instance<D> d2 = new Instance<D>(D.class, new Property(5, Property.PrimitiveType.INTEGER));
         Instance<B> b = new Instance<B>(B.class, new Compound(D.class, d1), new Compound(D.class, d2));
 
         B result = creator.create(b);
@@ -162,7 +162,7 @@ public class CreatorTest {
     public void createA_invalidCtor_exception() throws Exception {
         Creator creator = new Creator();
 
-        Instance<A> a = new Instance<A>(A.class, new Property(3));
+        Instance<A> a = new Instance<A>(A.class, new Property(3, Property.PrimitiveType.INTEGER));
 
         creator.create(a);
     }

@@ -8,9 +8,9 @@ import java.lang.reflect.Constructor;
 
 public class InstanceTest {
 
-    Parameter five = new Property(5);
-    Parameter seven = new Property(7);
-    Parameter name = new Property("Dave");
+    Parameter five = new Property(5, Property.PrimitiveType.INTEGER);
+    Parameter seven = new Property(7, Property.PrimitiveType.INTEGER);
+    Parameter name = new Property("Dave", Property.PrimitiveType.STRING);
 
     @Test(expectedExceptions = NullPointerException.class)
     public void classNull_exception() {
