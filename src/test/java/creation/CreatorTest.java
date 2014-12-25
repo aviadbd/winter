@@ -171,7 +171,8 @@ public class CreatorTest {
     public void createD_invalidCtor_exceptionContainsD() {
         Creator c = new Creator();
 
-        Instance<D> d = new Instance<D>(D.class, new Property(5), new Property(6));
+        Instance<D> d = new Instance<D>(D.class, new Property(5, Property.PrimitiveType.INTEGER),
+                new Property(6, Property.PrimitiveType.INTEGER));
 
         try {
             c.create(d);
@@ -187,7 +188,8 @@ public class CreatorTest {
     public void createA_invalidCtor_exceptionContainsDandA() {
         Creator c = new Creator();
 
-        Instance<D> d = new Instance<D>(D.class, new Property(5), new Property(6));
+        Instance<D> d = new Instance<D>(D.class, new Property(5, Property.PrimitiveType.INTEGER),
+                new Property(6, Property.PrimitiveType.INTEGER));
         Instance<A> a = new Instance<A>(A.class, new Compound(D.class, d));
 
         try {
@@ -205,8 +207,9 @@ public class CreatorTest {
     public void createB_invalidCtorFirstD_exceptionContainsD1() {
         Creator c = new Creator();
 
-        Instance<D> d1 = new Instance<D>(D.class, new Property(5), new Property(6));
-        Instance<D> d2 = new Instance<D>(D.class, new Property(5));
+        Instance<D> d1 = new Instance<D>(D.class, new Property(5, Property.PrimitiveType.INTEGER),
+                new Property(6, Property.PrimitiveType.INTEGER));
+        Instance<D> d2 = new Instance<D>(D.class, new Property(5, Property.PrimitiveType.INTEGER));
         Instance<B> b = new Instance<B>(B.class, new Compound(D.class, d1), new Compound(D.class, d2));
 
         try {
@@ -224,8 +227,9 @@ public class CreatorTest {
     public void createB_invalidCtorFirstD_exceptionContainsD2() {
         Creator c = new Creator();
 
-        Instance<D> d1 = new Instance<D>(D.class, new Property(5));
-        Instance<D> d2 = new Instance<D>(D.class, new Property(5), new Property(6));
+        Instance<D> d1 = new Instance<D>(D.class, new Property(5, Property.PrimitiveType.INTEGER));
+        Instance<D> d2 = new Instance<D>(D.class, new Property(5, Property.PrimitiveType.INTEGER),
+                new Property(6, Property.PrimitiveType.INTEGER));
         Instance<B> b = new Instance<B>(B.class, new Compound(D.class, d1), new Compound(D.class, d2));
 
         try {
@@ -362,7 +366,7 @@ public class CreatorTest {
     @Test
     public void addPreListener_createD_instanceCaptured() throws CreationException {
         Creator c = new Creator();
-        Instance<D> instance = new Instance<D>(D.class, new Property(5));
+        Instance<D> instance = new Instance<D>(D.class, new Property(5, Property.PrimitiveType.INTEGER));
 
         MyPreInstantiationListener pil = new MyPreInstantiationListener(true);
         c.addPreInstantiationListener(pil);
@@ -375,7 +379,7 @@ public class CreatorTest {
     @Test
     public void addPostListener_createD_instanceAndObjectCaptured() throws CreationException {
         Creator c = new Creator();
-        Instance<D> instance = new Instance<D>(D.class, new Property(5));
+        Instance<D> instance = new Instance<D>(D.class, new Property(5, Property.PrimitiveType.INTEGER));
 
         MyPostInstantiationListener pil = new MyPostInstantiationListener();
         c.addPostInstantiationListener(pil);
@@ -392,8 +396,8 @@ public class CreatorTest {
     public void createB_differentD_listenersCapture() throws CreationException {
         Creator creator = new Creator();
 
-        Instance<D> d1 = new Instance<D>(D.class, new Property(5));
-        Instance<D> d2 = new Instance<D>(D.class, new Property("name"));
+        Instance<D> d1 = new Instance<D>(D.class, new Property(5, Property.PrimitiveType.INTEGER));
+        Instance<D> d2 = new Instance<D>(D.class, new Property("name", Property.PrimitiveType.STRING));
         Instance<B> b = new Instance<B>(B.class, new Compound(D.class, d1), new Compound(D.class, d2));
 
         MyPreInstantiationListener pre = new MyPreInstantiationListener(true);
@@ -425,7 +429,7 @@ public class CreatorTest {
     public void createB_sameD_listenersCapture() throws CreationException {
         Creator creator = new Creator();
 
-        Instance<D> d = new Instance<D>(D.class, new Property(5));
+        Instance<D> d = new Instance<D>(D.class, new Property(5, Property.PrimitiveType.INTEGER));
         Instance<B> b = new Instance<B>(B.class, new Compound(D.class, d), new Compound(D.class, d));
 
         MyPreInstantiationListener pre = new MyPreInstantiationListener(true);
@@ -454,7 +458,7 @@ public class CreatorTest {
     @Test(expectedExceptions = CreationException.class, expectedExceptionsMessageRegExp = "Bad")
     public void preListenerThrowsCreationException_propagates() throws CreationException {
         Creator c = new Creator();
-        Instance<D> instance = new Instance<D>(D.class, new Property(5));
+        Instance<D> instance = new Instance<D>(D.class, new Property(5, Property.PrimitiveType.INTEGER));
 
         MyPreInstantiationListener pil = new MyPreInstantiationListener(false);
         c.addPreInstantiationListener(pil);
@@ -464,7 +468,7 @@ public class CreatorTest {
     @Test(expectedExceptions = CreationException.class)
     public void preListenerThrowsRuntimeException_wrapped() throws CreationException {
         Creator c = new Creator();
-        Instance<D> instance = new Instance<D>(D.class, new Property(5));
+        Instance<D> instance = new Instance<D>(D.class, new Property(5, Property.PrimitiveType.INTEGER));
 
         PreInstantiationListener pil = new PreInstantiationListener() {
             @Override
@@ -480,12 +484,12 @@ public class CreatorTest {
     @Test
     public void proof_changeParameter() throws CreationException {
         Creator c = new Creator();
-        Instance<D> instance = new Instance<D>(D.class, new Property(5));
+        Instance<D> instance = new Instance<D>(D.class, new Property(5, Property.PrimitiveType.INTEGER));
 
         PreInstantiationListener pil = new PreInstantiationListener() {
             @Override
             public void willCreateInstance(Instance<?> instance) throws CreationException {
-                instance.getParameters()[0] = new Property(6);
+                instance.getParameters()[0] = new Property(6, Property.PrimitiveType.INTEGER);
             }
         };
 
