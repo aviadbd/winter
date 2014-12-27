@@ -7,11 +7,11 @@ package flow;
  * @see flow.RouteUnit
  * @see flow.LogicUnit
  */
-public class WorkUnit<T> {
+class WorkUnit<T> {
     private final T data;
     private RouteUnit<T> currentLocation;
 
-    public WorkUnit(T data) {
+    WorkUnit(T data) {
         this.data = data;
     }
 
@@ -19,19 +19,8 @@ public class WorkUnit<T> {
      * Retrieves the data contained within the work unit.
      * @return The data.
      */
-    public T getData() {
+    T getData() {
         return data;
-    }
-
-    /**
-     * Creates a copy of the work unit. Data and location's pointers are copied.
-     * @return The new work unit.
-     */
-    public WorkUnit<T> createCopy() {
-        WorkUnit<T> copy = new WorkUnit<T>(this.data);
-        copy.setCurrentLocation(this.getCurrentLocation());
-
-        return copy;
     }
 
     // PACKAGE LEVEL ON PURPOSE

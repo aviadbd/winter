@@ -27,17 +27,25 @@ public final class Looper<T> implements Runnable {
     public void run() {
         while (!shutdown) {
             try {
-                WorkUnit<T> work = queue.take();
+                final WorkUnit<T> work = queue.take();
+                final T data = work.getData();
+
                 RouteUnit<T> currentLocation = work.getCurrentLocation();
                 if (currentLocation == null) {
                     currentLocation = entry;
                 }
 
-                for (final WorkUnit<T> updatedWork : currentLocation.updateRouteFor(work)) {
+                for (final RouteUnit<T> nextLocation : currentLocation.calculateRoutesFor(work)) {
                     executor.submit(new Runnable() {
                         @Override
                         public void run() {
-                            updatedWork.getCurrentLocation().getLogicUnit().execute(updatedWork, queue);
+                            T[] results = nextLocation.getLogicUnit().execute(data);
+
+                            for (T result : results) {
+                                WorkUnit<T> newWork = new WorkUnit<T>(result);
+                                newWork.setCurrentLocation(nextLocation);
+                                queue.add(newWork);
+                            }
                         }
                     });
                 }
