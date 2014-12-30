@@ -18,9 +18,17 @@ import java.util.concurrent.*;
  */
 public class LooperTest {
 
-    private final BlockingQueue<WorkUnit<Data>> blockingQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<WorkUnit<Data>> blockingQueue = new LinkedBlockingQueue<WorkUnit<Data>>();
     private ExecutorService workUnitThreadPool;
     private ExecutorService looperExecutorService;
+
+    private LogicUnit<Data> doNothingLU = new LogicUnit<Data>() {
+        @Override
+        public Data[] execute(Data work) {
+            return new Data[]{work};
+        }
+    };
+
     private LogicUnit<Data> lu_increase;
     private LogicUnit<Data> double_lu_increase;
 
@@ -62,8 +70,8 @@ public class LooperTest {
     @SuppressWarnings("unchecked")
     @Test(timeOut = 4000)
     public void noWork_shutdown() throws InterruptedException {
-        EntryRouteUnit<Data> entry = Mockito.mock(EntryRouteUnit.class);
-        Looper<Data> looper = new Looper<>(entry, blockingQueue, workUnitThreadPool);
+        RouteUnit<Data> entry = Mockito.mock(RouteUnit.class);
+        Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool);
         looperExecutorService.submit(looper);
         Thread.sleep(100);
         looper.setShutdown();
@@ -73,21 +81,15 @@ public class LooperTest {
 
     @Test
     public void singleRouteUnit() throws InterruptedException {
-        RouteUnit<Data> ru = new RouteUnit<Data>(lu_increase) {
+        final RouteUnit<Data> ru = new RouteUnit<Data>(lu_increase) {
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 return Collections.emptyList();
             }
         };
-        EntryRouteUnit<Data> entry = new EntryRouteUnit<Data>() {
-            @Override
-            public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
-                return Collections.singleton(ru);
-            }
-        };
-        Looper<Data> looper = new Looper<>(entry, blockingQueue, workUnitThreadPool);
+        Looper<Data> looper = new Looper<Data>(ru, blockingQueue, workUnitThreadPool);
         Data data = new Data(0);
-        blockingQueue.add(new WorkUnit<>(data));
+        blockingQueue.add(new WorkUnit<Data>(data));
         looperExecutorService.submit(looper);
         Thread.sleep(100);
         looper.setShutdown();
@@ -98,27 +100,21 @@ public class LooperTest {
 
     @Test
     public void multipleRouteUnit_sameLogicUnit() throws InterruptedException {
-        RouteUnit<Data> ru2 = new RouteUnit<Data>(lu_increase) {
+        final RouteUnit<Data> ru2 = new RouteUnit<Data>(lu_increase) {
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 return Collections.emptyList();
             }
         };
-        RouteUnit<Data> ru = new RouteUnit<Data>(lu_increase) {
+        final RouteUnit<Data> ru = new RouteUnit<Data>(lu_increase) {
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 return Collections.singleton(ru2);
             }
         };
-        EntryRouteUnit<Data> entry = new EntryRouteUnit<Data>() {
-            @Override
-            public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
-                return Collections.singleton(ru);
-            }
-        };
-        Looper<Data> looper = new Looper<>(entry, blockingQueue, workUnitThreadPool);
+        Looper<Data> looper = new Looper<Data>(ru, blockingQueue, workUnitThreadPool);
         Data data = new Data(0);
-        blockingQueue.add(new WorkUnit<>(data));
+        blockingQueue.add(new WorkUnit<Data>(data));
         looperExecutorService.submit(looper);
         Thread.sleep(100);
         looper.setShutdown();
@@ -129,27 +125,21 @@ public class LooperTest {
 
     @Test
     public void multipleRouteUnit_differentLogicUnit() throws InterruptedException {
-        RouteUnit<Data> ru2 = new RouteUnit<Data>(double_lu_increase) {
+        final RouteUnit<Data> ru2 = new RouteUnit<Data>(double_lu_increase) {
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 return Collections.emptyList();
             }
         };
-        RouteUnit<Data> ru = new RouteUnit<Data>(lu_increase) {
+        final RouteUnit<Data> ru = new RouteUnit<Data>(lu_increase) {
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 return Collections.singleton(ru2);
             }
         };
-        EntryRouteUnit<Data> entry = new EntryRouteUnit<Data>() {
-            @Override
-            public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
-                return Collections.singleton(ru);
-            }
-        };
-        Looper<Data> looper = new Looper<>(entry, blockingQueue, workUnitThreadPool);
+        Looper<Data> looper = new Looper<Data>(ru, blockingQueue, workUnitThreadPool);
         Data data = new Data(0);
-        blockingQueue.add(new WorkUnit<>(data));
+        blockingQueue.add(new WorkUnit<Data>(data));
         looperExecutorService.submit(looper);
         Thread.sleep(100);
         looper.setShutdown();
@@ -161,27 +151,29 @@ public class LooperTest {
     @Test
     // this test is valid only when workUnitThreadPool limited to 1
     public void singleRouteUnit_multipleResults() throws InterruptedException {
-        RouteUnit<Data> ru2 = new RouteUnit<Data>(double_lu_increase) {
+        final RouteUnit<Data> ru2 = new RouteUnit<Data>(double_lu_increase) {
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 return Collections.emptyList();
             }
         };
-        RouteUnit<Data> ru = new RouteUnit<Data>(lu_increase) {
+        final RouteUnit<Data> ru = new RouteUnit<Data>(lu_increase) {
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 return Collections.emptyList();
             }
         };
-        EntryRouteUnit<Data> entry = new EntryRouteUnit<Data>() {
+
+        RouteUnit<Data> entry = new RouteUnit<Data>(doNothingLU) {
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 return Arrays.asList(ru, ru2);
             }
         };
-        Looper<Data> looper = new Looper<>(entry, blockingQueue, workUnitThreadPool);
+
+        Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool);
         Data data = new Data(0);
-        blockingQueue.add(new WorkUnit<>(data));
+        blockingQueue.add(new WorkUnit<Data>(data));
         looperExecutorService.submit(looper);
         Thread.sleep(100);
         looper.setShutdown();
@@ -192,15 +184,15 @@ public class LooperTest {
 
     @Test
     public void singleRouteUnit_emptyResults() throws InterruptedException {
-        EntryRouteUnit<Data> entry = new EntryRouteUnit<Data>() {
+        RouteUnit<Data> entry = new RouteUnit<Data>(doNothingLU) {
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 return Collections.emptyList();
             }
         };
-        Looper<Data> looper = new Looper<>(entry, blockingQueue, workUnitThreadPool);
+        Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool);
         Data data = new Data(0);
-        blockingQueue.add(new WorkUnit<>(data));
+        blockingQueue.add(new WorkUnit<Data>(data));
         looperExecutorService.submit(looper);
         Thread.sleep(100);
         looper.setShutdown();
