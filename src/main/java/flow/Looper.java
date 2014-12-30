@@ -1,5 +1,6 @@
 package flow;
 
+import java.util.Collections;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -15,7 +16,7 @@ public final class Looper<T> implements Runnable {
 
     private boolean shutdown = false;
 
-    public Looper(EntryRouteUnit<T> entry, BlockingQueue<WorkUnit<T>> queue, ExecutorService executor) {
+    public Looper(RouteUnit<T> entry, BlockingQueue<WorkUnit<T>> queue, ExecutorService executor) {
         this.entry = entry;
         this.executor = executor;
         this.queue = new WorkUnitQueue<T>(queue);
@@ -32,20 +33,21 @@ public final class Looper<T> implements Runnable {
                 }
                 final T data = work.getData();
 
-                RouteUnit<T> currentLocation = work.getCurrentLocation();
-                if (currentLocation == null) {
-                    currentLocation = entry;
-                }
+                RouteUnit<T> currentRoute = work.getCurrentLocation();
 
-                for (final RouteUnit<T> nextLocation : currentLocation.calculateRoutesFor(work)) {
+                Iterable<RouteUnit<T>> nextRoutes = currentRoute == null
+                        ? Collections.singleton(entry)
+                        : currentRoute.calculateRoutesFor(work);
+
+                for (final RouteUnit<T> nextRoute : nextRoutes) {
                     executor.submit(new Runnable() {
                         @Override
                         public void run() {
-                            T[] results = nextLocation.getLogicUnit().execute(data);
+                            T[] results = nextRoute.getLogicUnit().execute(data);
 
                             for (T result : results) {
                                 WorkUnit<T> newWork = new WorkUnit<T>(result);
-                                newWork.setCurrentLocation(nextLocation);
+                                newWork.setCurrentLocation(nextRoute);
                                 queue.add(newWork);
                             }
                         }
