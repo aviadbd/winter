@@ -18,7 +18,7 @@ import java.util.concurrent.*;
  */
 public class LooperTest {
 
-    private final BlockingQueue<WorkUnit<Data>> blockingQueue = new LinkedBlockingQueue<WorkUnit<Data>>();
+    private BlockingQueue<WorkUnit<Data>> blockingQueue;
     private ExecutorService workUnitThreadPool;
     private ExecutorService looperExecutorService;
 
@@ -30,6 +30,8 @@ public class LooperTest {
     @BeforeTest
     @SuppressWarnings("unchecked")
     public void beforeAll(){
+        blockingQueue = new LinkedBlockingQueue<WorkUnit<Data>>();
+
         doNothing = Mockito.mock(LogicUnit.class);
         increaseOnce = Mockito.mock(LogicUnit.class);
         increaseTwice = Mockito.mock(LogicUnit.class);
@@ -40,7 +42,7 @@ public class LooperTest {
                 Data data = (Data) invocation.getArguments()[0];
                 return new Data[] { data };
             }
-        });
+        }).when(doNothing).execute(Mockito.any(Data.class));
         Mockito.doAnswer(new Answer<Data[]>() {
             @Override
             public Data[] answer(InvocationOnMock invocation) throws Throwable {
