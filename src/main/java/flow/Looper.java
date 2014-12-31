@@ -66,7 +66,7 @@ public final class Looper<T> implements Runnable {
         }
     }
 
-    public void setShutdown() {
+    public void shutdown() {
         shutdown = true;
     }
 }

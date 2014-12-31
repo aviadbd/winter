@@ -8,7 +8,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -102,7 +101,7 @@ public class LooperTest {
         Thread.sleep(100);
         blockingQueue.add(new WorkUnit<Data>(data2));
         Thread.sleep(100);
-        looper.setShutdown();
+        looper.shutdown();
         looperExecutorService.shutdown();
         looperExecutorService.awaitTermination(5000, TimeUnit.MILLISECONDS);
         Assert.assertEquals(data.getCounter(), 1);
@@ -181,7 +180,7 @@ public class LooperTest {
         Assert.assertEquals(data.getCounter(), 1);
 
         // cleanup
-        looper.setShutdown();
+        looper.shutdown();
         looperExecutorService.shutdown();
         looperExecutorService.awaitTermination(5, TimeUnit.SECONDS);
     }
@@ -198,7 +197,7 @@ public class LooperTest {
     private void submitAndTerminate(Looper<Data> looper) throws InterruptedException {
         looperExecutorService.submit(looper);
         Thread.sleep(100);
-        looper.setShutdown();
+        looper.shutdown();
         looperExecutorService.shutdown();
         looperExecutorService.awaitTermination(5000, TimeUnit.MILLISECONDS);
     }
