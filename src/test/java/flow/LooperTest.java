@@ -15,6 +15,7 @@ import java.util.concurrent.*;
 
 /**
  * Created by Tzachi on 12/27/14.
+ *
  */
 public class LooperTest {
 
@@ -30,8 +31,6 @@ public class LooperTest {
     @BeforeTest
     @SuppressWarnings("unchecked")
     public void beforeAll(){
-        blockingQueue = new LinkedBlockingQueue<WorkUnit<Data>>();
-
         doNothing = Mockito.mock(LogicUnit.class);
         increaseOnce = Mockito.mock(LogicUnit.class);
         increaseTwice = Mockito.mock(LogicUnit.class);
@@ -48,7 +47,7 @@ public class LooperTest {
             public Data[] answer(InvocationOnMock invocation) throws Throwable {
                 Data data = (Data) invocation.getArguments()[0];
                 data.increaseCounter();
-                return new Data[] { data };
+                return new Data[]{data};
             }}).when(increaseOnce).execute(Mockito.any(Data.class));
         Mockito.doAnswer(new Answer<Data[]>() {
             @Override
@@ -65,7 +64,7 @@ public class LooperTest {
     public void beforeMethod(){
         workUnitThreadPool = Executors.newFixedThreadPool(1);
         looperExecutorService = Executors.newFixedThreadPool(1);
-        blockingQueue.clear();
+        blockingQueue = new LinkedBlockingQueue<WorkUnit<Data>>();
     }
 
     @SuppressWarnings("unchecked")
@@ -73,11 +72,7 @@ public class LooperTest {
     public void noWork_shutdown() throws InterruptedException {
         RouteUnit<Data> entry = Mockito.mock(RouteUnit.class);
         Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool);
-        looperExecutorService.submit(looper);
-        Thread.sleep(100);
-        looper.setShutdown();
-        looperExecutorService.shutdown();
-        looperExecutorService.awaitTermination(5000, TimeUnit.MILLISECONDS);
+        submitAndTerminate(looper);
     }
 
     @Test
@@ -91,12 +86,31 @@ public class LooperTest {
         Looper<Data> looper = new Looper<Data>(ru, blockingQueue, workUnitThreadPool);
         Data data = new Data(0);
         blockingQueue.add(new WorkUnit<Data>(data));
+        submitAndTerminate(looper);
+        Assert.assertEquals(data.getCounter(), 1);
+    }
+
+    @Test
+    public void exceptionOnRoutingUnit_noCrushes() throws InterruptedException {
+        final RouteUnit<Data> entry = new RouteUnit<Data>(increaseOnce) {
+            @Override
+            public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
+                throw new RuntimeException();
+            }
+        };
+        Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool);
+        Data data = new Data(0);
+        Data data2 = new Data(0);
+        blockingQueue.add(new WorkUnit<Data>(data));
         looperExecutorService.submit(looper);
+        Thread.sleep(100);
+        blockingQueue.add(new WorkUnit<Data>(data2));
         Thread.sleep(100);
         looper.setShutdown();
         looperExecutorService.shutdown();
         looperExecutorService.awaitTermination(5000, TimeUnit.MILLISECONDS);
         Assert.assertEquals(data.getCounter(), 1);
+        Assert.assertEquals(data2.getCounter(), 1);
     }
 
     @Test
@@ -116,11 +130,7 @@ public class LooperTest {
         Looper<Data> looper = new Looper<Data>(ru, blockingQueue, workUnitThreadPool);
         Data data = new Data(0);
         blockingQueue.add(new WorkUnit<Data>(data));
-        looperExecutorService.submit(looper);
-        Thread.sleep(100);
-        looper.setShutdown();
-        looperExecutorService.shutdown();
-        looperExecutorService.awaitTermination(5000, TimeUnit.MILLISECONDS);
+        submitAndTerminate(looper);
         Assert.assertEquals(data.getCounter(), 2);
     }
 
@@ -141,11 +151,7 @@ public class LooperTest {
         Looper<Data> looper = new Looper<Data>(ru, blockingQueue, workUnitThreadPool);
         Data data = new Data(0);
         blockingQueue.add(new WorkUnit<Data>(data));
-        looperExecutorService.submit(looper);
-        Thread.sleep(100);
-        looper.setShutdown();
-        looperExecutorService.shutdown();
-        looperExecutorService.awaitTermination(5000, TimeUnit.MILLISECONDS);
+        submitAndTerminate(looper);
         Assert.assertEquals(data.getCounter(), 3);
     }
 
@@ -166,6 +172,7 @@ public class LooperTest {
         };
 
         RouteUnit<Data> entry = new RouteUnit<Data>(doNothing) {
+            @SuppressWarnings("unchecked")
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 return Arrays.asList(ru, ru2);
@@ -175,11 +182,7 @@ public class LooperTest {
         Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool);
         Data data = new Data(0);
         blockingQueue.add(new WorkUnit<Data>(data));
-        looperExecutorService.submit(looper);
-        Thread.sleep(100);
-        looper.setShutdown();
-        looperExecutorService.shutdown();
-        looperExecutorService.awaitTermination(5000, TimeUnit.MILLISECONDS);
+        submitAndTerminate(looper);
         Assert.assertEquals(data.getCounter(), 3);
     }
 
@@ -194,14 +197,17 @@ public class LooperTest {
         Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool);
         Data data = new Data(0);
         blockingQueue.add(new WorkUnit<Data>(data));
+        submitAndTerminate(looper);
+        Assert.assertEquals(data.getCounter(), 0);
+    }
+
+    private void submitAndTerminate(Looper<Data> looper) throws InterruptedException {
         looperExecutorService.submit(looper);
         Thread.sleep(100);
         looper.setShutdown();
         looperExecutorService.shutdown();
         looperExecutorService.awaitTermination(5000, TimeUnit.MILLISECONDS);
-        Assert.assertEquals(data.getCounter(), 0);
     }
-
 
     static class Data{
         private int counter;

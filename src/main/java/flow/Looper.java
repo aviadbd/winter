@@ -7,10 +7,11 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Created by aviadbendov on 12/27/14.
+ *
  */
 public final class Looper<T> implements Runnable {
     private final RouteUnit<T> entry;
-    private final WorkUnitQueue<T> queue;
+    private final BlockingQueue<WorkUnit<T>> queue;
     private final ExecutorService executor;
     private final long QUEUE_WAITING_TIME = 100;
 
@@ -19,7 +20,7 @@ public final class Looper<T> implements Runnable {
     public Looper(RouteUnit<T> entry, BlockingQueue<WorkUnit<T>> queue, ExecutorService executor) {
         this.entry = entry;
         this.executor = executor;
-        this.queue = new WorkUnitQueue<T>(queue);
+        this.queue = queue;
     }
 
 
@@ -55,6 +56,9 @@ public final class Looper<T> implements Runnable {
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
+            } catch (Exception e){
+                //TODO: handle exception
+//                e.printStackTrace();
             }
         }
     }
