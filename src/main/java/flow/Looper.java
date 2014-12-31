@@ -33,7 +33,7 @@ public final class Looper<T> implements Runnable {
                 }
                 final T data = work.getData();
 
-                RouteUnit<T> currentRoute = work.getCurrentLocation();
+                RouteUnit<T> currentRoute = work.getCurrentRoute();
 
                 Iterable<RouteUnit<T>> nextRoutes = currentRoute == null
                         ? Collections.singleton(entry)

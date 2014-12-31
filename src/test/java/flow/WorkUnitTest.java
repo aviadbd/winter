@@ -25,7 +25,7 @@ public class WorkUnitTest {
     @Test
     public void getCurrentLocation_null(){
         WorkUnit<String> wu = new WorkUnit<String>("test");
-        Assert.assertNull(wu.getCurrentLocation());
+        Assert.assertNull(wu.getCurrentRoute());
     }
 
     @SuppressWarnings("unchecked")
@@ -34,6 +34,6 @@ public class WorkUnitTest {
         WorkUnit<String> wu = new WorkUnit<String>("test");
         RouteUnit<String> ru = Mockito.mock(RouteUnit.class);
         wu.setCurrentLocation(ru);
-        Assert.assertSame(wu.getCurrentLocation(), ru);
+        Assert.assertSame(wu.getCurrentRoute(), ru);
     }
 }

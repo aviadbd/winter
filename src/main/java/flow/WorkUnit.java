@@ -25,7 +25,7 @@ class WorkUnit<T> {
 
     // PACKAGE LEVEL ON PURPOSE
 
-    RouteUnit<T> getCurrentLocation() {
+    RouteUnit<T> getCurrentRoute() {
         return currentLocation;
     }
 
