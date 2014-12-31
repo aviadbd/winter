@@ -14,15 +14,15 @@ public final class Looper<T> implements Runnable {
     private final BlockingQueue<WorkUnit<T>> queue;
     private final ExecutorService executor;
     private final long QUEUE_WAITING_TIME = 100;
-
+    private final RuntimeExceptionHandler runtimeExceptionHandler;
     private boolean shutdown = false;
 
-    public Looper(RouteUnit<T> entry, BlockingQueue<WorkUnit<T>> queue, ExecutorService executor) {
+    public Looper(RouteUnit<T> entry, BlockingQueue<WorkUnit<T>> queue, ExecutorService executor, RuntimeExceptionHandler runtimeExceptionHandler) {
         this.entry = entry;
         this.executor = executor;
         this.queue = queue;
+        this.runtimeExceptionHandler = runtimeExceptionHandler;
     }
-
 
     @Override
     public void run() {
@@ -56,17 +56,21 @@ public final class Looper<T> implements Runnable {
                         });
                     }
                 } catch (RuntimeException e){
-                    //TODO: handle exception
-//                e.printStackTrace();
+                    if (runtimeExceptionHandler != null) {
+                        runtimeExceptionHandler.handleException(e);
+                    }
                 }
             }
         } catch (InterruptedException e) {
-            // TODO: Handle exception
-            e.printStackTrace();
+            // This is OK. Nothing should happen here.
         }
     }
 
     public void shutdown() {
         shutdown = true;
+    }
+
+    public static interface RuntimeExceptionHandler {
+        void handleException(RuntimeException ex);
     }
 }

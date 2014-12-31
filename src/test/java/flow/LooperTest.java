@@ -71,14 +71,14 @@ public class LooperTest {
     @Test(timeOut = 4000)
     public void noWork_shutdown() throws InterruptedException {
         RouteUnit<Data> entry = Mockito.mock(RouteUnit.class);
-        Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool);
+        Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool, null);
         submitAndTerminate(looper);
     }
 
     @Test
     public void singleRouteUnit() throws InterruptedException {
         final RouteUnit<Data> ru = createFinalRoute(increaseOnce);
-        Looper<Data> looper = new Looper<Data>(ru, blockingQueue, workUnitThreadPool);
+        Looper<Data> looper = new Looper<Data>(ru, blockingQueue, workUnitThreadPool, null);
         Data data = new Data(0);
         blockingQueue.add(new WorkUnit<Data>(data));
         submitAndTerminate(looper);
@@ -93,7 +93,7 @@ public class LooperTest {
                 throw new RuntimeException();
             }
         };
-        Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool);
+        Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool, null);
         Data data = new Data(0);
         Data data2 = new Data(0);
         blockingQueue.add(new WorkUnit<Data>(data));
@@ -109,11 +109,45 @@ public class LooperTest {
     }
 
     @Test
+    public void exceptionOnRoutingUnit_exceptionHandlerReceivesException() throws InterruptedException {
+        final RouteUnit<Data> entry = new RouteUnit<Data>(increaseOnce) {
+            @Override
+            public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
+                throw new RuntimeException("Hello");
+            }
+        };
+
+        final RuntimeException[] exception = {null};
+
+        final Looper.RuntimeExceptionHandler handler = new Looper.RuntimeExceptionHandler() {
+            @Override
+            public void handleException(RuntimeException ex) {
+                exception[0] = ex;
+            }
+        };
+
+        Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool, handler);
+        Data data = new Data(0);
+        Data data2 = new Data(0);
+        blockingQueue.add(new WorkUnit<Data>(data));
+        looperExecutorService.submit(looper);
+        Thread.sleep(100);
+        blockingQueue.add(new WorkUnit<Data>(data2));
+        Thread.sleep(100);
+        looper.shutdown();
+        looperExecutorService.shutdown();
+        looperExecutorService.awaitTermination(5000, TimeUnit.MILLISECONDS);
+
+        Assert.assertNotNull(exception[0]);
+        Assert.assertEquals("Hello", exception[0].getMessage());
+    }
+
+    @Test
     public void multipleRouteUnit_sameLogicUnit() throws InterruptedException {
         final RouteUnit<Data> ru2 = createFinalRoute(increaseOnce);
         final RouteUnit<Data> ru = createRoute(increaseOnce, ru2);
 
-        Looper<Data> looper = new Looper<Data>(ru, blockingQueue, workUnitThreadPool);
+        Looper<Data> looper = new Looper<Data>(ru, blockingQueue, workUnitThreadPool, null);
         Data data = new Data(0);
         blockingQueue.add(new WorkUnit<Data>(data));
         submitAndTerminate(looper);
@@ -124,7 +158,7 @@ public class LooperTest {
     public void multipleRouteUnit_differentLogicUnit() throws InterruptedException {
         final RouteUnit<Data> ru2 = createFinalRoute(increaseTwice);
         final RouteUnit<Data> ru = createRoute(increaseOnce, ru2);
-        Looper<Data> looper = new Looper<Data>(ru, blockingQueue, workUnitThreadPool);
+        Looper<Data> looper = new Looper<Data>(ru, blockingQueue, workUnitThreadPool, null);
         Data data = new Data(0);
         blockingQueue.add(new WorkUnit<Data>(data));
         submitAndTerminate(looper);
@@ -139,7 +173,7 @@ public class LooperTest {
 
         RouteUnit<Data> entry = createRoute(doNothing, ru, ru2);
 
-        Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool);
+        Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool, null);
         Data data = new Data(0);
         blockingQueue.add(new WorkUnit<Data>(data));
         submitAndTerminate(looper);
@@ -149,7 +183,7 @@ public class LooperTest {
     @Test
     public void singleRouteUnit_emptyResults() throws InterruptedException {
         RouteUnit<Data> entry = createFinalRoute(doNothing);
-        Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool);
+        Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool, null);
         Data data = new Data(0);
         blockingQueue.add(new WorkUnit<Data>(data));
         submitAndTerminate(looper);
@@ -159,7 +193,7 @@ public class LooperTest {
     @Test(timeOut = 10000L)
     public void looperThreadInterrupted_looperExited() throws InterruptedException {
         ExecutorService service = Executors.newFixedThreadPool(2);
-        Looper<Data> looper = new Looper<Data>(createFinalRoute(increaseOnce), blockingQueue, service);
+        Looper<Data> looper = new Looper<Data>(createFinalRoute(increaseOnce), blockingQueue, service, null);
         Future<?> future = looperExecutorService.submit(looper);
 
         // first we add some work
