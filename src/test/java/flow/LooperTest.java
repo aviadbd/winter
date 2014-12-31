@@ -22,41 +22,40 @@ public class LooperTest {
     private ExecutorService workUnitThreadPool;
     private ExecutorService looperExecutorService;
 
-    private LogicUnit<Data> doNothingLU = new LogicUnit<Data>() {
-        @Override
-        public Data[] execute(Data work) {
-            return new Data[]{work};
-        }
-    };
-
-    private LogicUnit<Data> lu_increase;
-    private LogicUnit<Data> double_lu_increase;
+    private LogicUnit<Data> doNothing;
+    private LogicUnit<Data> increaseOnce;
+    private LogicUnit<Data> increaseTwice;
 
 
     @BeforeTest
     @SuppressWarnings("unchecked")
     public void beforeAll(){
-        lu_increase = Mockito.mock(LogicUnit.class);
-        double_lu_increase = Mockito.mock(LogicUnit.class);
+        doNothing = Mockito.mock(LogicUnit.class);
+        increaseOnce = Mockito.mock(LogicUnit.class);
+        increaseTwice = Mockito.mock(LogicUnit.class);
+
+        Mockito.doAnswer(new Answer<Data[]>() {
+            @Override
+            public Data[] answer(InvocationOnMock invocation) throws Throwable {
+                Data data = (Data) invocation.getArguments()[0];
+                return new Data[] { data };
+            }
+        });
         Mockito.doAnswer(new Answer<Data[]>() {
             @Override
             public Data[] answer(InvocationOnMock invocation) throws Throwable {
                 Data data = (Data) invocation.getArguments()[0];
                 data.increaseCounter();
-                Data[] datas = new Data[1];
-                Collections.singleton(data).toArray(datas);
-                return datas;
-            }}).when(lu_increase).execute(Mockito.any(Data.class));
+                return new Data[] { data };
+            }}).when(increaseOnce).execute(Mockito.any(Data.class));
         Mockito.doAnswer(new Answer<Data[]>() {
             @Override
             public Data[] answer(InvocationOnMock invocation) throws Throwable {
                 Data data = (Data) invocation.getArguments()[0];
                 data.increaseCounter();
                 data.increaseCounter();
-                Data[] datas = new Data[1];
-                Collections.singleton(data).toArray(datas);
-                return datas;
-            }}).when(double_lu_increase).execute(Mockito.any(Data.class));
+                return new Data[] { data };
+            }}).when(increaseTwice).execute(Mockito.any(Data.class));
     }
 
 
@@ -81,7 +80,7 @@ public class LooperTest {
 
     @Test
     public void singleRouteUnit() throws InterruptedException {
-        final RouteUnit<Data> ru = new RouteUnit<Data>(lu_increase) {
+        final RouteUnit<Data> ru = new RouteUnit<Data>(increaseOnce) {
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 return Collections.emptyList();
@@ -100,13 +99,13 @@ public class LooperTest {
 
     @Test
     public void multipleRouteUnit_sameLogicUnit() throws InterruptedException {
-        final RouteUnit<Data> ru2 = new RouteUnit<Data>(lu_increase) {
+        final RouteUnit<Data> ru2 = new RouteUnit<Data>(increaseOnce) {
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 return Collections.emptyList();
             }
         };
-        final RouteUnit<Data> ru = new RouteUnit<Data>(lu_increase) {
+        final RouteUnit<Data> ru = new RouteUnit<Data>(increaseOnce) {
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 return Collections.singleton(ru2);
@@ -125,13 +124,13 @@ public class LooperTest {
 
     @Test
     public void multipleRouteUnit_differentLogicUnit() throws InterruptedException {
-        final RouteUnit<Data> ru2 = new RouteUnit<Data>(double_lu_increase) {
+        final RouteUnit<Data> ru2 = new RouteUnit<Data>(increaseTwice) {
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 return Collections.emptyList();
             }
         };
-        final RouteUnit<Data> ru = new RouteUnit<Data>(lu_increase) {
+        final RouteUnit<Data> ru = new RouteUnit<Data>(increaseOnce) {
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 return Collections.singleton(ru2);
@@ -151,20 +150,20 @@ public class LooperTest {
     @Test
     // this test is valid only when workUnitThreadPool limited to 1
     public void singleRouteUnit_multipleResults() throws InterruptedException {
-        final RouteUnit<Data> ru2 = new RouteUnit<Data>(double_lu_increase) {
+        final RouteUnit<Data> ru2 = new RouteUnit<Data>(increaseTwice) {
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 return Collections.emptyList();
             }
         };
-        final RouteUnit<Data> ru = new RouteUnit<Data>(lu_increase) {
+        final RouteUnit<Data> ru = new RouteUnit<Data>(increaseOnce) {
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 return Collections.emptyList();
             }
         };
 
-        RouteUnit<Data> entry = new RouteUnit<Data>(doNothingLU) {
+        RouteUnit<Data> entry = new RouteUnit<Data>(doNothing) {
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 return Arrays.asList(ru, ru2);
@@ -184,7 +183,7 @@ public class LooperTest {
 
     @Test
     public void singleRouteUnit_emptyResults() throws InterruptedException {
-        RouteUnit<Data> entry = new RouteUnit<Data>(doNothingLU) {
+        RouteUnit<Data> entry = new RouteUnit<Data>(doNothing) {
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 return Collections.emptyList();
