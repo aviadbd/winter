@@ -8,6 +8,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -77,12 +78,7 @@ public class LooperTest {
 
     @Test
     public void singleRouteUnit() throws InterruptedException {
-        final RouteUnit<Data> ru = new RouteUnit<Data>(increaseOnce) {
-            @Override
-            public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
-                return Collections.emptyList();
-            }
-        };
+        final RouteUnit<Data> ru = createFinalRoute(increaseOnce);
         Looper<Data> looper = new Looper<Data>(ru, blockingQueue, workUnitThreadPool);
         Data data = new Data(0);
         blockingQueue.add(new WorkUnit<Data>(data));
@@ -115,18 +111,9 @@ public class LooperTest {
 
     @Test
     public void multipleRouteUnit_sameLogicUnit() throws InterruptedException {
-        final RouteUnit<Data> ru2 = new RouteUnit<Data>(increaseOnce) {
-            @Override
-            public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
-                return Collections.emptyList();
-            }
-        };
-        final RouteUnit<Data> ru = new RouteUnit<Data>(increaseOnce) {
-            @Override
-            public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
-                return Collections.singleton(ru2);
-            }
-        };
+        final RouteUnit<Data> ru2 = createFinalRoute(increaseOnce);
+        final RouteUnit<Data> ru = createRoute(increaseOnce, ru2);
+
         Looper<Data> looper = new Looper<Data>(ru, blockingQueue, workUnitThreadPool);
         Data data = new Data(0);
         blockingQueue.add(new WorkUnit<Data>(data));
@@ -136,18 +123,8 @@ public class LooperTest {
 
     @Test
     public void multipleRouteUnit_differentLogicUnit() throws InterruptedException {
-        final RouteUnit<Data> ru2 = new RouteUnit<Data>(increaseTwice) {
-            @Override
-            public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
-                return Collections.emptyList();
-            }
-        };
-        final RouteUnit<Data> ru = new RouteUnit<Data>(increaseOnce) {
-            @Override
-            public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
-                return Collections.singleton(ru2);
-            }
-        };
+        final RouteUnit<Data> ru2 = createFinalRoute(increaseTwice);
+        final RouteUnit<Data> ru = createRoute(increaseOnce, ru2);
         Looper<Data> looper = new Looper<Data>(ru, blockingQueue, workUnitThreadPool);
         Data data = new Data(0);
         blockingQueue.add(new WorkUnit<Data>(data));
@@ -158,26 +135,10 @@ public class LooperTest {
     @Test
     // this test is valid only when workUnitThreadPool limited to 1
     public void singleRouteUnit_multipleResults() throws InterruptedException {
-        final RouteUnit<Data> ru2 = new RouteUnit<Data>(increaseTwice) {
-            @Override
-            public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
-                return Collections.emptyList();
-            }
-        };
-        final RouteUnit<Data> ru = new RouteUnit<Data>(increaseOnce) {
-            @Override
-            public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
-                return Collections.emptyList();
-            }
-        };
+        final RouteUnit<Data> ru2 = createFinalRoute(increaseTwice);
+        final RouteUnit<Data> ru = createFinalRoute(increaseOnce);
 
-        RouteUnit<Data> entry = new RouteUnit<Data>(doNothing) {
-            @SuppressWarnings("unchecked")
-            @Override
-            public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
-                return Arrays.asList(ru, ru2);
-            }
-        };
+        RouteUnit<Data> entry = createRoute(doNothing, ru, ru2);
 
         Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool);
         Data data = new Data(0);
@@ -188,17 +149,50 @@ public class LooperTest {
 
     @Test
     public void singleRouteUnit_emptyResults() throws InterruptedException {
-        RouteUnit<Data> entry = new RouteUnit<Data>(doNothing) {
-            @Override
-            public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
-                return Collections.emptyList();
-            }
-        };
+        RouteUnit<Data> entry = createFinalRoute(doNothing);
         Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool);
         Data data = new Data(0);
         blockingQueue.add(new WorkUnit<Data>(data));
         submitAndTerminate(looper);
         Assert.assertEquals(data.getCounter(), 0);
+    }
+
+    @Test(timeOut = 10000L)
+    public void looperThreadInterrupted_looperExited() throws InterruptedException {
+        ExecutorService service = Executors.newFixedThreadPool(2);
+        Looper<Data> looper = new Looper<Data>(createFinalRoute(increaseOnce), blockingQueue, service);
+        Future<?> future = looperExecutorService.submit(looper);
+
+        // first we add some work
+        Data data = new Data(0);
+        blockingQueue.add(new WorkUnit<Data>(data));
+        // we wait for it to be done
+        Thread.sleep(1000);
+        Assert.assertEquals(data.getCounter(), 1);
+        // then we cancel the looper thread - this should send an interrupt exception in its blocking methods
+        future.cancel(true);
+        // we wait for the exception to happen
+        Thread.sleep(1000);
+
+        // we add the work again
+        blockingQueue.add(new WorkUnit<Data>(data));
+        // we wait for the work to be "done" (it shouldn't do anything)
+        Thread.sleep(1000);
+        Assert.assertEquals(data.getCounter(), 1);
+
+        // cleanup
+        looper.setShutdown();
+        looperExecutorService.shutdown();
+        looperExecutorService.awaitTermination(5, TimeUnit.SECONDS);
+    }
+
+    private RouteUnit<Data> createFinalRoute(final LogicUnit<Data> logicUnit) {
+        return new RouteUnit<Data>(logicUnit) {
+            @Override
+            public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
+                return Collections.emptyList();
+            }
+        };
     }
 
     private void submitAndTerminate(Looper<Data> looper) throws InterruptedException {
@@ -208,6 +202,17 @@ public class LooperTest {
         looperExecutorService.shutdown();
         looperExecutorService.awaitTermination(5000, TimeUnit.MILLISECONDS);
     }
+
+    private RouteUnit<Data> createRoute(final LogicUnit<Data> logicUnit, final RouteUnit<Data>... nextRoute) {
+        return new RouteUnit<Data>(logicUnit) {
+            @Override
+            public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
+                return Arrays.asList(nextRoute);
+            }
+        };
+    }
+
+
 
     static class Data{
         private int counter;

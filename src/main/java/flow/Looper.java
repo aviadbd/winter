@@ -26,40 +26,43 @@ public final class Looper<T> implements Runnable {
 
     @Override
     public void run() {
-        while (!shutdown) {
-            try {
-                final WorkUnit<T> work = queue.poll(QUEUE_WAITING_TIME, TimeUnit.MILLISECONDS);
-                if (work == null){
-                    continue;
-                }
-                final T data = work.getData();
+        try {
+            while (!shutdown) {
+                try {
+                    final WorkUnit<T> work = queue.poll(QUEUE_WAITING_TIME, TimeUnit.MILLISECONDS);
+                    if (work == null){
+                        continue;
+                    }
+                    final T data = work.getData();
 
-                RouteUnit<T> currentRoute = work.getCurrentRoute();
+                    RouteUnit<T> currentRoute = work.getCurrentRoute();
 
-                Iterable<RouteUnit<T>> nextRoutes = currentRoute == null
-                        ? Collections.singleton(entry)
-                        : currentRoute.calculateRoutesFor(work);
+                    Iterable<RouteUnit<T>> nextRoutes = currentRoute == null
+                            ? Collections.singleton(entry)
+                            : currentRoute.calculateRoutesFor(work);
 
-                for (final RouteUnit<T> nextRoute : nextRoutes) {
-                    executor.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            T[] results = nextRoute.getLogicUnit().execute(data);
+                    for (final RouteUnit<T> nextRoute : nextRoutes) {
+                        executor.submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                T[] results = nextRoute.getLogicUnit().execute(data);
 
-                            for (T result : results) {
-                                WorkUnit<T> newWork = new WorkUnit<T>(result);
-                                newWork.setCurrentLocation(nextRoute);
-                                queue.add(newWork);
+                                for (T result : results) {
+                                    WorkUnit<T> newWork = new WorkUnit<T>(result);
+                                    newWork.setCurrentLocation(nextRoute);
+                                    queue.add(newWork);
+                                }
                             }
-                        }
-                    });
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (Exception e){
-                //TODO: handle exception
+                        });
+                    }
+                } catch (RuntimeException e){
+                    //TODO: handle exception
 //                e.printStackTrace();
+                }
             }
+        } catch (InterruptedException e) {
+            // TODO: Handle exception
+            e.printStackTrace();
         }
     }
 
