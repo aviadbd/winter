@@ -119,7 +119,7 @@ public class LooperTest {
 
         final RuntimeException[] exception = {null};
 
-        final Looper.RuntimeExceptionHandler handler = new Looper.RuntimeExceptionHandler() {
+        final RuntimeExceptionHandler handler = new RuntimeExceptionHandler() {
             @Override
             public void handleException(RuntimeException ex) {
                 exception[0] = ex;

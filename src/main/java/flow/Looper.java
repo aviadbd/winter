@@ -70,7 +70,4 @@ public final class Looper<T> implements Runnable {
         shutdown = true;
     }
 
-    public static interface RuntimeExceptionHandler {
-        void handleException(RuntimeException ex);
-    }
 }
