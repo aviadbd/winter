@@ -117,12 +117,18 @@ public class LooperTest {
             }
         };
 
-        final RuntimeException[] exception = {null};
+        final RuntimeException[] runtimeException = {null};
+        final ExecutionException[] executionException = {null};
 
-        final RuntimeExceptionHandler handler = new RuntimeExceptionHandler() {
+        final ExceptionHandler handler = new ExceptionHandler() {
             @Override
             public void handleException(RuntimeException ex) {
-                exception[0] = ex;
+                runtimeException[0] = ex;
+            }
+
+            @Override
+            public void handleException(ExecutionException ex) {
+                executionException[0] = ex;
             }
         };
 
@@ -138,8 +144,9 @@ public class LooperTest {
         looperExecutorService.shutdown();
         looperExecutorService.awaitTermination(5000, TimeUnit.MILLISECONDS);
 
-        Assert.assertNotNull(exception[0]);
-        Assert.assertEquals("Hello", exception[0].getMessage());
+        Assert.assertNotNull(runtimeException[0]);
+        Assert.assertEquals("Hello", runtimeException[0].getMessage());
+        Assert.assertNull(executionException[0]);
     }
 
     @Test
@@ -230,7 +237,7 @@ public class LooperTest {
 
     private void submitAndTerminate(Looper<Data> looper) throws InterruptedException {
         looperExecutorService.submit(looper);
-        Thread.sleep(100);
+        Thread.sleep(200);
         looper.shutdown();
         looperExecutorService.shutdown();
         looperExecutorService.awaitTermination(5000, TimeUnit.MILLISECONDS);
@@ -257,6 +264,13 @@ public class LooperTest {
         }
         public int getCounter() {
             return counter;
+        }
+
+        @Override
+        public String toString() {
+            return "Data{" +
+                    "counter=" + counter +
+                    '}';
         }
     }
 }
