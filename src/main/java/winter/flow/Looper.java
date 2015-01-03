@@ -8,17 +8,26 @@ import java.util.concurrent.*;
  */
 public final class Looper<T> implements Runnable {
     private final RouteUnit<T> entry;
-    private final BlockingQueue<WorkUnit<T>> queue;
+    private final BlockingQueue<WorkUnit<T>> queue = new LinkedBlockingQueue<WorkUnit<T>>();
     private final long QUEUE_WAITING_TIME = 100;
     private final ExceptionHandler exceptionHandler;
     private final Launcher<T> launcher;
     private boolean shutdown = false;
 
-    public Looper(RouteUnit<T> entry, BlockingQueue<WorkUnit<T>> queue, Executor executor, ExceptionHandler exceptionHandler) {
+    public Looper(RouteUnit<T> entry, Executor executor, ExceptionHandler exceptionHandler) {
         this.entry = entry;
-        this.launcher = new Launcher<T>(executor, queue, exceptionHandler);
-        this.queue = queue;
+        this.launcher = new Launcher<T>(this, executor, exceptionHandler);
         this.exceptionHandler = exceptionHandler;
+    }
+
+    public void createWork(T data) {
+        queue.add(new WorkUnit<T>(data));
+    }
+
+    /*package*/ void createWork(T data, RouteUnit<T> route) {
+        WorkUnit<T> workUnit = new WorkUnit<T>(data);
+        workUnit.setCurrentLocation(route);
+        queue.add(workUnit);
     }
 
     @Override

@@ -15,11 +15,9 @@ import java.util.concurrent.*;
 
 /**
  * Created by Tzachi on 12/27/14.
- *
  */
 public class LooperTest {
 
-    private BlockingQueue<WorkUnit<Data>> blockingQueue;
     private ExecutorService workUnitThreadPool;
     private ExecutorService looperExecutorService;
 
@@ -30,7 +28,7 @@ public class LooperTest {
 
     @BeforeTest
     @SuppressWarnings("unchecked")
-    public void beforeAll(){
+    public void beforeAll() {
         doNothing = Mockito.mock(LogicUnit.class);
         increaseOnce = Mockito.mock(LogicUnit.class);
         increaseTwice = Mockito.mock(LogicUnit.class);
@@ -39,7 +37,7 @@ public class LooperTest {
             @Override
             public Data[] answer(InvocationOnMock invocation) throws Throwable {
                 Data data = (Data) invocation.getArguments()[0];
-                return new Data[] { data };
+                return new Data[]{data};
             }
         }).when(doNothing).execute(Mockito.any(Data.class));
         Mockito.doAnswer(new Answer<Data[]>() {
@@ -48,58 +46,59 @@ public class LooperTest {
                 Data data = (Data) invocation.getArguments()[0];
                 data.increaseCounter();
                 return new Data[]{data};
-            }}).when(increaseOnce).execute(Mockito.any(Data.class));
+            }
+        }).when(increaseOnce).execute(Mockito.any(Data.class));
         Mockito.doAnswer(new Answer<Data[]>() {
             @Override
             public Data[] answer(InvocationOnMock invocation) throws Throwable {
                 Data data = (Data) invocation.getArguments()[0];
                 data.increaseCounter();
                 data.increaseCounter();
-                return new Data[] { data };
-            }}).when(increaseTwice).execute(Mockito.any(Data.class));
+                return new Data[]{data};
+            }
+        }).when(increaseTwice).execute(Mockito.any(Data.class));
     }
 
 
     @BeforeMethod
-    public void beforeMethod(){
+    public void beforeMethod() {
         workUnitThreadPool = Executors.newFixedThreadPool(1);
         looperExecutorService = Executors.newFixedThreadPool(1);
-        blockingQueue = new LinkedBlockingQueue<WorkUnit<Data>>();
     }
 
     @SuppressWarnings("unchecked")
     @Test(timeOut = 4000)
     public void noWork_shutdown() throws InterruptedException {
         RouteUnit<Data> entry = Mockito.mock(RouteUnit.class);
-        Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool, null);
+        Looper<Data> looper = new Looper<Data>(entry, workUnitThreadPool, null);
         submitAndTerminate(looper);
     }
 
     @Test
     public void singleRouteUnit() throws InterruptedException {
         final RouteUnit<Data> ru = createFinalRoute(increaseOnce);
-        Looper<Data> looper = new Looper<Data>(ru, blockingQueue, workUnitThreadPool, null);
+        Looper<Data> looper = new Looper<Data>(ru, workUnitThreadPool, null);
         Data data = new Data(0);
-        blockingQueue.add(new WorkUnit<Data>(data));
+        looper.createWork(data);
         submitAndTerminate(looper);
         Assert.assertEquals(data.getCounter(), 1);
     }
 
     @Test
-    public void exceptionOnRoutingUnit_noCrushes() throws InterruptedException {
+    public void exceptionOnRoutingUnit_noCrashes() throws InterruptedException {
         final RouteUnit<Data> entry = new RouteUnit<Data>(increaseOnce) {
             @Override
             public Collection<RouteUnit<Data>> calculateRoutesFor(WorkUnit<Data> work) {
                 throw new RuntimeException();
             }
         };
-        Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool, null);
+        Looper<Data> looper = new Looper<Data>(entry, workUnitThreadPool, null);
         Data data = new Data(0);
         Data data2 = new Data(0);
-        blockingQueue.add(new WorkUnit<Data>(data));
+        looper.createWork(data);
         looperExecutorService.submit(looper);
         Thread.sleep(100);
-        blockingQueue.add(new WorkUnit<Data>(data2));
+        looper.createWork(data2);
         Thread.sleep(100);
         looper.shutdown();
         looperExecutorService.shutdown();
@@ -132,13 +131,13 @@ public class LooperTest {
             }
         };
 
-        Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool, handler);
+        Looper<Data> looper = new Looper<Data>(entry, workUnitThreadPool, handler);
         Data data = new Data(0);
         Data data2 = new Data(0);
-        blockingQueue.add(new WorkUnit<Data>(data));
+        looper.createWork(data);
         looperExecutorService.submit(looper);
         Thread.sleep(100);
-        blockingQueue.add(new WorkUnit<Data>(data2));
+        looper.createWork(data2);
         Thread.sleep(100);
         looper.shutdown();
         looperExecutorService.shutdown();
@@ -154,9 +153,9 @@ public class LooperTest {
         final RouteUnit<Data> ru2 = createFinalRoute(increaseOnce);
         final RouteUnit<Data> ru = createRoute(increaseOnce, ru2);
 
-        Looper<Data> looper = new Looper<Data>(ru, blockingQueue, workUnitThreadPool, null);
+        Looper<Data> looper = new Looper<Data>(ru, workUnitThreadPool, null);
         Data data = new Data(0);
-        blockingQueue.add(new WorkUnit<Data>(data));
+        looper.createWork(data);
         submitAndTerminate(looper);
         Assert.assertEquals(data.getCounter(), 2);
     }
@@ -165,9 +164,9 @@ public class LooperTest {
     public void multipleRouteUnit_differentLogicUnit() throws InterruptedException {
         final RouteUnit<Data> ru2 = createFinalRoute(increaseTwice);
         final RouteUnit<Data> ru = createRoute(increaseOnce, ru2);
-        Looper<Data> looper = new Looper<Data>(ru, blockingQueue, workUnitThreadPool, null);
+        Looper<Data> looper = new Looper<Data>(ru, workUnitThreadPool, null);
         Data data = new Data(0);
-        blockingQueue.add(new WorkUnit<Data>(data));
+        looper.createWork(data);
         submitAndTerminate(looper);
         Assert.assertEquals(data.getCounter(), 3);
     }
@@ -180,9 +179,9 @@ public class LooperTest {
 
         RouteUnit<Data> entry = createRoute(doNothing, ru, ru2);
 
-        Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool, null);
+        Looper<Data> looper = new Looper<Data>(entry, workUnitThreadPool, null);
         Data data = new Data(0);
-        blockingQueue.add(new WorkUnit<Data>(data));
+        looper.createWork(data);
         submitAndTerminate(looper);
         Assert.assertEquals(data.getCounter(), 3);
     }
@@ -190,9 +189,9 @@ public class LooperTest {
     @Test
     public void singleRouteUnit_emptyResults() throws InterruptedException {
         RouteUnit<Data> entry = createFinalRoute(doNothing);
-        Looper<Data> looper = new Looper<Data>(entry, blockingQueue, workUnitThreadPool, null);
+        Looper<Data> looper = new Looper<Data>(entry, workUnitThreadPool, null);
         Data data = new Data(0);
-        blockingQueue.add(new WorkUnit<Data>(data));
+        looper.createWork(data);
         submitAndTerminate(looper);
         Assert.assertEquals(data.getCounter(), 0);
     }
@@ -200,12 +199,12 @@ public class LooperTest {
     @Test(timeOut = 10000L)
     public void looperThreadInterrupted_looperExited() throws InterruptedException {
         ExecutorService service = Executors.newFixedThreadPool(2);
-        Looper<Data> looper = new Looper<Data>(createFinalRoute(increaseOnce), blockingQueue, service, null);
+        Looper<Data> looper = new Looper<Data>(createFinalRoute(increaseOnce), service, null);
         Future<?> future = looperExecutorService.submit(looper);
 
         // first we add some work
         Data data = new Data(0);
-        blockingQueue.add(new WorkUnit<Data>(data));
+        looper.createWork(data);
         // we wait for it to be done
         Thread.sleep(1000);
         Assert.assertEquals(data.getCounter(), 1);
@@ -215,7 +214,7 @@ public class LooperTest {
         Thread.sleep(1000);
 
         // we add the work again
-        blockingQueue.add(new WorkUnit<Data>(data));
+        looper.createWork(data);
         // we wait for the work to be "done" (it shouldn't do anything)
         Thread.sleep(1000);
         Assert.assertEquals(data.getCounter(), 1);
@@ -253,15 +252,17 @@ public class LooperTest {
     }
 
 
-
-    static class Data{
+    static class Data {
         private int counter;
+
         public Data(int counter) {
             this.counter = counter;
         }
-        public void increaseCounter(){
+
+        public void increaseCounter() {
             counter++;
         }
+
         public int getCounter() {
             return counter;
         }

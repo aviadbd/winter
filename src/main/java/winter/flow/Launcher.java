@@ -10,18 +10,18 @@ import java.util.concurrent.*;
  * The Launcher is the completing part to the {@link winter.flow.Looper} logic, as it sends {@link winter.flow.LogicUnit}
  * to the {@link java.util.concurrent.Executor} provided to the <code>Looper</code> class and then retrieves their
  * results, creating new {@link winter.flow.WorkUnit}s from them and adding them to the <code>Looper</code>'s queue.
- *
+ * <p/>
  * Note that the <code>Launcher</code> and <code>Looper</code> are very tightly coupled by design.
  */
 final class Launcher<T> {
     private final Queue<LogicUnitLauncher> freeLaunchers = new LinkedList<LogicUnitLauncher>();
     private final Map<Future<LogicUnitLaunchResult>, LogicUnitLauncher> usedLaunchers = new HashMap<Future<LogicUnitLaunchResult>, LogicUnitLauncher>();
     private final CompletionService<LogicUnitLaunchResult> executor;
-    private final BlockingQueue<WorkUnit<T>> queue;
     private final ExceptionHandler exceptionHandler;
+    private final Looper<T> looper;
 
-    public Launcher(Executor executor, BlockingQueue<WorkUnit<T>> queue, ExceptionHandler exceptionHandler) {
-        this.queue = queue;
+    public Launcher(Looper<T> looper, Executor executor, ExceptionHandler exceptionHandler) {
+        this.looper = looper;
         this.exceptionHandler = exceptionHandler;
         this.executor = new ExecutorCompletionService<LogicUnitLaunchResult>(executor);
     }
@@ -53,9 +53,7 @@ final class Launcher<T> {
                     LogicUnitLaunchResult result = finishedFuture.get();
 
                     for (T resultData : result.results) {
-                        WorkUnit<T> newWork = new WorkUnit<T>(resultData);
-                        newWork.setCurrentLocation(result.route);
-                        queue.add(newWork);
+                        looper.createWork(resultData, result.route);
                     }
                 } catch (ExecutionException e) {
                     if (exceptionHandler != null) {
