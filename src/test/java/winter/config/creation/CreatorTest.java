@@ -1,15 +1,10 @@
 package winter.config.creation;
 
-import data.A;
-import data.B;
-import data.C;
-import data.D;
-import winter.config.model.Compound;
-import winter.config.model.Instance;
-import winter.config.model.Null;
-import winter.config.model.Property;
+import data.*;
+import winter.config.model.*;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import winter.config.model.Enum;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -20,6 +15,17 @@ import java.util.List;
  * Created by aviadbendov on 11/20/14.
  */
 public class CreatorTest {
+
+    @Test
+    public void createE_withEnum() throws CreationException {
+        Creator c = new Creator();
+        Instance<E> instance = new Instance<E>(E.class, new Enum(E.F.Value));
+
+        E result = c.create(instance);
+
+        Assert.assertNotNull(result, "result");
+        Assert.assertEquals(result.getEnum(), E.F.Value, "result.enum");
+    }
 
     @Test
     public void createD_withInt() throws Exception {

@@ -14,10 +14,6 @@ public class Enum implements Parameter {
         this.value = value;
     }
 
-    public Object getValue() {
-        return value;
-    }
-
     @Override
     public Class<?> getConstructorType() {
         return value.getClass();
@@ -30,7 +26,7 @@ public class Enum implements Parameter {
 
     @Override
     public String toString() {
-        return String.format("[%s:%s]", getConstructorType().toString(), getValue().toString());
+        return String.format("[%s:%s]", getConstructorType(), value);
     }
 
 }
