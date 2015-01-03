@@ -21,8 +21,6 @@ public final class Looper<T> implements Runnable {
         this.exceptionHandler = exceptionHandler;
     }
 
-    // Logic Unit Launcher pool
-
     @Override
     public void run() {
         try {

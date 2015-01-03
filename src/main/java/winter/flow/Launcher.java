@@ -7,7 +7,11 @@ import java.util.Queue;
 import java.util.concurrent.*;
 
 /**
- * Created by aviadbendov on 1/3/15.
+ * The Launcher is the completing part to the {@link winter.flow.Looper} logic, as it sends {@link winter.flow.LogicUnit}
+ * to the {@link java.util.concurrent.Executor} provided to the <code>Looper</code> class and then retrieves their
+ * results, creating new {@link winter.flow.WorkUnit}s from them and adding them to the <code>Looper</code>'s queue.
+ *
+ * Note that the <code>Launcher</code> and <code>Looper</code> are very tightly coupled by design.
  */
 final class Launcher<T> {
     private final Queue<LogicUnitLauncher> freeLaunchers = new LinkedList<LogicUnitLauncher>();
