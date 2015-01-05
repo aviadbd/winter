@@ -13,7 +13,7 @@ dependencies {
     testCompile 'org.mockito:mockito-all:1.9.5'
     testCompile 'org.powermock:powermock-module-testng-agent:1.6.0'
     testCompile 'org.powermock:powermock-api-mockito:1.6.0'
-
+    testCompile 'org.codehaus.groovy:groovy:1.7.8'
 }
 
 test {
