@@ -21,6 +21,7 @@ public class Validator<T> {
 
     public static final String PRECONDITION_FAILED = "Precondition Failed";
     public static final String UNSUPPORTED_POSTCONDITION = "UnsupportedPostcondition";
+    private static final String NAME = "work";
     ScriptEngineManager factory = new ScriptEngineManager();
     private final T validatedObject;
 
@@ -37,13 +38,11 @@ public class Validator<T> {
         // TODO: from some reason every function is doubled in reflection (one with object and one with the actual type)
         // TODO: support more than one method
         Method method = input.getClass().getDeclaredMethod("execute", validatedObject.getClass());
-        Parameter parameter = method.getParameters()[0];
-        String name = parameter.getName();
         PreCondition preCondition = method.getAnnotation(PreCondition.class);
         if (preCondition != null) {
             //  retrieve parameters names from function and put them in engine if needed
             // TODO: how to overcome different parameter names in different logic classes
-            engine.put(name, validatedObject);
+            engine.put(NAME, validatedObject);
             String expression = preCondition.expression();
             if (!(Boolean) engine.eval(expression)) {
                 throw new RuntimeException(PRECONDITION_FAILED);
